@@ -72,7 +72,7 @@ def create_interface() -> gr.Blocks:
             with gr.Column(scale=3):
                 user_input = gr.Textbox(
                     placeholder="Ask me anything...",
-                    lines=3,
+                    lines=1,
                     max_lines=5,
                     show_label=False,
                     submit_btn=True
