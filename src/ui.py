@@ -84,10 +84,6 @@ def create_interface() -> gr.Blocks:
         # --- Events ---    
         send_btn.click(chat_manager.chat, inputs=user_input, outputs=chatbot).then(lambda: "", outputs=user_input)
         user_input.submit(chat_manager.chat, inputs=user_input, outputs=chatbot).then(lambda: "", outputs=user_input)
-
-        # # Initialize chat with greeting when interface loads
-        # def initialize_chat():
-        #     return chat_manager.get_initial_greeting()
         
         #new_chat_btn.click(fn=chat_agent.reset, outputs=[], show_progress=False)
         #new_chat_btn.click(fn=lambda: [], outputs=chatbot, show_progress=False)
