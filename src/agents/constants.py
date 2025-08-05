@@ -13,12 +13,52 @@ RULES
 -NEVER make assumptions or speculations  
 """
 
-SECTION_S100_DEFINITION = """
--SECTION S100 – PURPOSE OF THE GOODS AND SERVICES: 
-  --WHY the PURCHASER needs the goods: e.g. safety objectives, improving operations, saving time, meeting a business requirement.
-  --specifies and describes the goods at a high level
-  --sets the context for evaluating the suitability of the goods
-  --states any constraints on how the SUPPLIER Provides the Goods
+SECTION_S101_DEFINITION = """
+SECTION S101: Purchaser's Objectives
+WHAT: Explains why the Purchaser needs the goods. Includes safety goals, improving operations, saving time, or meeting a specific business requirement. 
+WHY: Helps Supplier understand what the Purchaser is trying to achieve and sets the context for evaluating the suitability of the goods.
+"""
+
+SECTION_S102_DEFINITION = """
+SECTION S102: Description of the Goods
+WHAT: Gives a full and clear description of the goods the Supplier must provide. Includes what the goods are called, what they are used for, and their basic characteristics such as size, capacity, or model. 
+WHY: This helps avoid misunderstandings and forms the baseline for assessing what must be delivered
+"""
+
+SECTION_S103_DEFINITION = """
+SECTION S103: Drawings
+WHAT: Lists all drawings, diagrams, or schematics that are required to help define or illustrate the goods. Includes the layout, arrangement, fabrication details, or connections. 
+WHY: This section ensures that the visual documents match the written descriptions and can be used by the Supplier to confirm design intent.
+"""
+
+SECTION_S104_DEFINITION = """
+SECTION S104: Tests and Inspections
+WHAT: Specifies any tests or inspections that must be carried out to verify that the goods meet the required quality standards. Includes what tests are needed, who performs them, when and where they happen, and what results are considered acceptable. 
+WHY: Clear test requirements reduce the risk of disputes during delivery or acceptance.
+"""
+
+SECTION_S105_DEFINITION = """
+SECTION S105: Samples 
+WHAT: Outlines whether the Supplier must provide physical samples of the goods for review or acceptance before full supply or fabrication. Includes how these samples are to be submitted, reviewed, and either accepted or rejected. 
+WHY: This helps the Purchaser confirm that the goods will meet expectations before production or delivery begins.
+"""
+
+SECTION_S106_DEFINITION = """
+SECTION S106: 
+WHAT: Describes how all tests and inspections will be organised, coordinated, and recorded. Includes who needs to be present, how access is arranged, what documentation is needed, and how results are submitted. 
+WHY: Ensures that tests and inspections are carried out smoothly, without causing delays or confusion.
+"""
+
+SECTION_S107_DEFINITION = """
+SECTION S107: 
+WHAT: Outlines the process for correcting any defects found during testing, inspection, or delivery. Includes how issues are reported, how access is arranged for repairs, and how the defect is retested. 
+WHY: Ensures that defective goods are addressed in a controlled and timely way, reducing delays and disputes.
+"""
+
+SECTION_S108_DEFINITION = """
+SECTION S108: 
+WHAT: Lists any Purchaser-specific health and safety requirements that go beyond general legal compliance. Includes safety procedures, reporting protocols, supervision requirements, or rules for working on the Purchaser’s site. 
+WHY: Ensures that the Supplier’s work is aligned with the Purchaser’s internal safety standards.
 """
 
 CONTEXT_JSON_SCHEMA = """
@@ -47,8 +87,8 @@ CONTEXT JSON SCHEMA
 }
 """
 
-CONTEXT_JSON_DESCRIPTION = """
-CONTEXT JSON DESCRIPTION
+CONTEXT_JSON_CONVENTIONS = """
+CONTEXT JSON CONVENTIONS
 ================================================
 -field:next_question 
     --The next question to ask the PURCHASER

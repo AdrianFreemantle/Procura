@@ -1,6 +1,6 @@
 import gradio as gr
 
-from agents.facts_agent import ChatManager
+from agents.chat_manager import ChatManager
 from agents.markdown_agent import MarkdownAgent
 
 chat_manager = ChatManager()
