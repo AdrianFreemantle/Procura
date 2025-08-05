@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+
+# Env files
+.env
+
+# VSCode settings
+.vscode/
+
+# User's sdk examples directory
+sdk_examples/
+
+# MacOS
+.DS_Store
+
+# Placeholder files
+.keep
