@@ -4,12 +4,13 @@ def msg(role: str, content: str) -> dict:
     return {"role": role, "content": content}        
 
 class Agent:
-    def __init__(self, model="gpt-4.1", system_prompt: str ="You are a helpful assistant."):
+    def __init__(self, model="gpt-4.1", temperature: float = 0.7, system_prompt: str ="You are a helpful assistant."):
         self.client = OpenAI()
         self.model = model
         self.conversation_history = []
         self.allowed_conversation_roles = {"user", "assistant"}
         self.system_prompt = system_prompt
+        self.temperature = temperature
 
     def send(self, user_input: str = "Say hello", developer_prompt: str = None, show_thinking: bool = False, return_string_only: bool = False):                                  
         self.conversation_history.append(msg("user", user_input))        
@@ -25,7 +26,8 @@ class Agent:
         with self.client.responses.stream(
             model=self.model,
             input=input,
-            instructions=self.system_prompt            
+            instructions=self.system_prompt,
+            temperature=self.temperature            
         ) as stream:    
             if(return_string_only):
                 yield from self._process_stream_string_only(stream)

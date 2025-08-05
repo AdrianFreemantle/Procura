@@ -6,7 +6,7 @@ class MarkdownAgent:
 
     def generate(self):
         yield "…thinking"
-        yield from self.agent.send(user_input="Generate an example markdown document for a new construction project proposal.", string_only=True, show_thinking=False)
+        yield from self.agent.send(user_input="Generate an example markdown document for a new construction project proposal.", return_string_only=True, show_thinking=False)
 
 
 markdown_agent_system_prompt = (

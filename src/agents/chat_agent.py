@@ -8,4 +8,3 @@ class ChatAgent:
         yield from self.agent.send(user_input=user_input, developer_prompt="You speak like a pirate.", show_thinking=True, return_string_only=False)
         
 chat_agent_system_prompt = ("You are a friendly assistant.")
-
