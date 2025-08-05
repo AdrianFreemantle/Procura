@@ -62,7 +62,9 @@ def create_interface() -> gr.Blocks:
                 markdown_output = gr.Markdown(
                     value="*No document drafted yet.*",
                     elem_id="doc_output",                    
-                    container=True
+                    container=True,
+                    show_copy_button=True,
+                    show_download_button=True
                 )
 
         # --- Bottom: Message Input and Draft Button ---
