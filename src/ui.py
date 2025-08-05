@@ -82,11 +82,40 @@ def create_interface() -> gr.Blocks:
                 draft_btn = gr.Button("📄 Draft Document", variant="secondary")
 
         # --- Events ---    
-        send_btn.click(chat_manager.chat, inputs=user_input, outputs=chatbot).then(lambda: "", outputs=user_input)
-        user_input.submit(chat_manager.chat, inputs=user_input, outputs=chatbot).then(lambda: "", outputs=user_input)
-        
-        #new_chat_btn.click(fn=chat_agent.reset, outputs=[], show_progress=False)
-        #new_chat_btn.click(fn=lambda: [], outputs=chatbot, show_progress=False)
+
+        def send_message(message, chat_history):
+            # Process the message and return updated chat
+            for updated_chat in chat_manager.chat(message):
+                chat_history = updated_chat
+            return chat_history
+
+        # Step 1: Clear input, store message in state
+        def prep_message(user_input, chat_history):
+            new_message = {"role": "user", "content": user_input}
+            chat_history.append(new_message)
+            return "", user_input, chat_history
+
+        message_state = gr.State()
+
+        send_btn.click(
+            fn=prep_message,
+            inputs=[user_input, chatbot],
+            outputs=[user_input, message_state, chatbot],
+        ).then(
+            fn=send_message,
+            inputs=[message_state, chatbot],
+            outputs=[chatbot],
+        )
+
+        user_input.submit(
+            fn=prep_message,
+            inputs=[user_input, chatbot],
+            outputs=[user_input, message_state, chatbot],
+        ).then(
+            fn=send_message,
+            inputs=[message_state, chatbot],
+            outputs=[chatbot],
+        )
 
         def handle_markdown_generation():
             """Wrapper to convert agent output to gr.update format for proper markdown rendering"""
