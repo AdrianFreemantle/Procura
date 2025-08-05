@@ -2,11 +2,9 @@ import gradio as gr
 
 from agents.chat_agent import ChatAgent
 from agents.markdown_agent import MarkdownAgent
-from agents.agent import Agent
 
 chat_agent = ChatAgent()
 markdown_agent = MarkdownAgent()
-agent = Agent()
 
 # -----------------------------------------------------------------------------
 # Gradio UI --------------------------------------------------------------------
@@ -27,6 +25,15 @@ CSS = """
   flex: 1 1 auto !important;
   overflow: auto !important;
   height: calc(100vh - 260px) !important;
+}
+#doc_output {
+  background-color: #2d2d2d !important;
+  border: 1px solid #ddd !important;
+  padding: 1rem !important;
+  border-radius: 6px !important;
+  font-family: system-ui, sans-serif !important;
+  overflow: auto !important;
+  min-height: 100px !important;
 }
 """
 
@@ -52,11 +59,10 @@ def create_interface() -> gr.Blocks:
                     type="messages"
                 )
             with gr.Column(scale=2):
-                markdown_output = gr.Code(
-                    label=None,
-                    language="markdown",
-                    value="Click '📄 Draft Document' to generate a sample markdown document.",
-                    elem_id="doc_output"
+                markdown_output = gr.Markdown(
+                    value="*No document drafted yet.*",
+                    elem_id="doc_output",                    
+                    container=True
                 )
 
         # --- Bottom: Message Input and Draft Button ---
@@ -73,12 +79,17 @@ def create_interface() -> gr.Blocks:
                 draft_btn = gr.Button("📄 Draft Document", variant="secondary")
 
         # --- Events ---
-        send_btn.click(agent.chat, inputs=user_input, outputs=chatbot)
-        user_input.submit(agent.chat, inputs=user_input, outputs=chatbot)
+        send_btn.click(chat_agent.chat, inputs=user_input, outputs=chatbot)
+        user_input.submit(chat_agent.chat, inputs=user_input, outputs=chatbot)
 
-        new_chat_btn.click(fn=agent.reset, outputs=[], show_progress=False)
-        new_chat_btn.click(fn=lambda: [], outputs=chatbot, show_progress=False)
+        #new_chat_btn.click(fn=chat_agent.reset, outputs=[], show_progress=False)
+        #new_chat_btn.click(fn=lambda: [], outputs=chatbot, show_progress=False)
 
-        draft_btn.click(markdown_agent.generate, inputs=[], outputs=markdown_output)
+        def handle_markdown_generation():
+            """Wrapper to convert agent output to gr.update format for proper markdown rendering"""
+            for content in markdown_agent.generate():
+                yield gr.update(value=content)
+
+        draft_btn.click(handle_markdown_generation, inputs=[], outputs=markdown_output)
 
     return demo

@@ -4,30 +4,39 @@ def msg(role: str, content: str) -> dict:
     return {"role": role, "content": content}        
 
 class Agent:
-    def __init__(self, model="gpt-4.1"):
+    def __init__(self, model="gpt-4.1", system_prompt: str ="You are a helpful assistant."):
         self.client = OpenAI()
         self.model = model
         self.conversation_history = []
         self.allowed_conversation_roles = {"user", "assistant"}
+        self.system_prompt = system_prompt
 
-    def chat(self, user_input: str, instructions: str = "You are a helpful assistant.", context: str = None):       
-                           
+    def send(self, user_input: str = "Say hello", developer_prompt: str = None, show_thinking: bool = False, return_string_only: bool = False):                                  
         self.conversation_history.append(msg("user", user_input))        
 
-        yield self.get_conversation_history() + [msg("assistant", "…thinking")]      
+        if(show_thinking):
+            yield self.get_conversation_history() + [msg("assistant", "…thinking")]      
 
-        messages = self.conversation_history
+        input = self.conversation_history
 
-        if(context):
-            messages = messages + [msg("developer", context)]
+        if(developer_prompt):
+            input = input + [msg("developer", developer_prompt)]
         
         with self.client.responses.stream(
             model=self.model,
-            input=messages,
-            instructions=instructions            
-        ) as stream:
-            yield from self._process_stream(stream)
+            input=input,
+            instructions=self.system_prompt            
+        ) as stream:    
+            if(return_string_only):
+                yield from self._process_stream_string_only(stream)
+            else:
+                yield from self._process_stream(stream)
     
+    def _process_stream_string_only(self, stream):
+        for event in stream:
+            if event.type == "response.output_text.delta" and event.snapshot:
+                yield event.snapshot
+
     def _process_stream(self, stream):
         for event in stream:
             if event.type == "response.output_text.delta" and event.snapshot:
