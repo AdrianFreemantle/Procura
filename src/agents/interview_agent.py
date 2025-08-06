@@ -1,32 +1,38 @@
 from openai import OpenAI
-from agents.prompts import S101_INTERVIEWER_PROMPT
 from agents.context import Context
+from agents.prompts import build_prompt
+from agents.enums import SectionID
 
 class InterviewerAgent:
 
-    def __init__(self, model="gpt-4.1-mini", system_prompt: str = S101_INTERVIEWER_PROMPT):       
+    def __init__(self):
         self.client = OpenAI()
-        self.model = model
+        self.model = os.getenv("INTERVIEW_MODEL", "gpt-4.1-mini")
+        self.temperature = float(os.getenv("INTERVIEW_TEMP", 0.7))
         self.conversation_history = []
         self.allowed_conversation_roles = {"user", "assistant"}
-        self.system_prompt = system_prompt
-        self.temperature = 0.7
         #HACK: we populate the conversation history with the initial greeting here and in the ui.py to simplify the greeting process
         self.conversation_history.append(self._msg("assistant", "Hello! I am here to assist you in gathering information to draft an NEC4 Supply Short Contract."))
 
     def interview(self, user_input: str, context: Context):
-        self.conversation_history.append(self._msg("user", user_input))        
+        self.conversation_history.append(self._msg("user", user_input))             
 
-        input = self.conversation_history + [self._msg("developer", context.model_dump_json())]
+        input = self.conversation_history + [self._msg("developer", self._build_developer_prompt(context))]
         
         with self.client.responses.stream(
             model=self.model,
             input=input,
-            instructions=self.system_prompt,
+            instructions=self._build_system_prompt(context.current_section),
             temperature=self.temperature            
         ) as stream:    
             yield from self._process_stream(stream)
     
+    def _build_system_prompt(self, section_id: SectionID):
+        return build_prompt(section_id, "interviewer")
+
+    def _build_developer_prompt(self, context: Context):
+        return "Next question: " + context.next_question + "\n\nContext: " + context.model_dump_json()
+
     def _process_stream(self, stream):
         for event in stream:
             if event.type == "response.output_text.delta" and event.snapshot:

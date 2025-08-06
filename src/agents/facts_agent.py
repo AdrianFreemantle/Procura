@@ -1,22 +1,20 @@
 from openai import OpenAI
-import rich
-from agents.prompts import S101_FACT_EVALUATOR_PROMPT, S101_INTERVIEWER_PROMPT
 from agents.context import Context
+from agents.enums import SectionID
+from agents.prompts import build_prompt
 
 class FactsAgent:
-    def __init__(self, model="gpt-4.1-mini", system_prompt: str = S101_FACT_EVALUATOR_PROMPT):
+    def __init__(self):
         self.client = OpenAI()
-        self.model = model
+        self.model = os.getenv("FACTS_MODEL", "gpt-4.1-mini")
+        self.temperature = float(os.getenv("FACTS_TEMP", 0.0))
         self.conversation_history = []
-        self.system_prompt = system_prompt
 
-    def evaluate(self, history: list[dict[str, str]], context: Context) -> Context:
-        rich.print(context.model_dump_json(indent=2))
-
+    def evaluate(self, history: list[dict[str, str]], context: Context) -> Context:      
         response = self.client.responses.parse(            
             model=self.model,            
-            temperature=0.0,
-            instructions=self.system_prompt,
+            temperature=self.temperature,
+            instructions=self._build_system_prompt(context.current_section),
             input=[
                 self._msg("developer", context.model_dump_json()),
                 self._msg("user", "get facts")
@@ -26,9 +24,10 @@ class FactsAgent:
 
         new_context = response.output_parsed
         
-        rich.print(new_context.model_dump_json(indent=2))
-        
         return new_context
+
+    def _build_system_prompt(self, section_id: SectionID):
+        return build_prompt(section_id, "fact_evaluator")
 
     def _msg(self,role: str, content: str) -> dict:
         return {"role": role, "content": content} 
