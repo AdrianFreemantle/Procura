@@ -12,7 +12,6 @@ S101_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="The core operational problem, deficiency, or risk prompting this procurement. This should be specific, measurable, and clearly linked to the Purchaser’s operations.",
                 question="What specific operational issue, inefficiency, or risk is driving the need for this procurement?",
-                priority=90,
                 value=""
             )
         ),
@@ -21,7 +20,6 @@ S101_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="The longer-term business or strategic objectives the Purchaser intends to achieve through this procurement. Examples include regulatory compliance, expansion into new markets, or achieving specific performance targets.",
                 question="What longer-term business or strategic goals is the Purchaser aiming to achieve with this procurement?",
-                priority=80,
                 value=""
             )
         ),
@@ -30,7 +28,6 @@ S101_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="Tangible improvements the Purchaser expects to realise after successful delivery. These must be framed as measurable operational results (e.g. reduced downtime, lower maintenance costs, improved throughput).",
                 question="What specific outcomes or improvements does the Purchaser expect to achieve through this procurement?",
-                priority=70,
                 value=""
             )
         ),
@@ -39,7 +36,6 @@ S101_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="Any known defects, inefficiencies, or operational risks in current systems or processes that this procurement is intended to fix or mitigate.",
                 question="What known issues or shortcomings with current operations or equipment is this procurement intended to address?",
-                priority=60,
                 value=""
             )
         ),
@@ -48,7 +44,6 @@ S101_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="Any existing assets (e.g. equipment, machinery, tools, infrastructure) that will be replaced, upgraded, or decommissioned as a direct result of this procurement.",
                 question="Are there specific assets, systems, or equipment that this procurement will replace or upgrade?",
-                priority=50,
                 value=""
             )
         ),
@@ -57,7 +52,6 @@ S101_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="Any internal or external limitations affecting the procurement. These may include regulatory deadlines, funding windows, space limitations, or coordination with other projects.",
                 question="Are there any constraints — such as regulatory deadlines, funding limits, or site limitations — that affect how or when this procurement must occur?",
-                priority=40,
                 value=""
             )
         )
@@ -73,7 +67,6 @@ S102_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="The internal name, designation, or label by which the Purchaser identifies the goods. This should reflect how the goods are referred to in internal documents, procurement records, or day-to-day usage.",
                 question="What name or label does the Purchaser commonly use to refer to the goods being procured?",
-                priority=90,
                 value=""
             )
         ),
@@ -82,7 +75,6 @@ S102_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="The specific operational purpose or function the goods will perform within the Purchaser’s business. This must be framed as an outcome or use case, not a technical specification.",
                 question="What specific operational function will the goods perform once delivered?",
-                priority=80,
                 value=""
             )
         ),
@@ -91,7 +83,6 @@ S102_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="The factual and measurable attributes that define the goods. This includes type, capacity, model, dimensions, configuration, or any other property necessary to identify what is being procured.",
                 question="What are the key measurable characteristics of the goods (such as type, size, model, or capacity)?",
-                priority=70,
                 value=""
             )
         ),
@@ -100,7 +91,6 @@ S102_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="Any constraints or requirements relating to the brand, manufacturer, or country of origin. This includes situations where only specific suppliers or jurisdictions are acceptable due to technical, regulatory, or policy reasons.",
                 question="Is there a required or preferred brand, manufacturer, or country of origin for the goods?",
-                priority=60,
                 value=""
             )
         ),
@@ -109,7 +99,6 @@ S102_CONTEXT: SectionContextBase = GenericSectionContext(
             data=Fact(
                 description="Any expected or permitted accessories, variants, or optional components that may be included with the goods. This includes non-essential items that the Purchaser still expects or desires.",
                 question="Are there any optional accessories, variants, or add-ons that the Purchaser expects to be included?",
-                priority=50,
                 value=""
             )
         )
@@ -167,7 +156,6 @@ S103_CONTEXT: SectionContextBase = SectionS103Context(
             data=Fact(
                 description="Indicates whether any engineering or technical drawings are used to define, clarify, or specify the goods. These may include layouts, schematics, or component diagrams.",
                 question="Are there any drawings that define or illustrate the goods being procured?",
-                priority=90,
                 value=""
             )
         )

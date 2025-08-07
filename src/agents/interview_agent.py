@@ -3,7 +3,6 @@ from agents.agent_prompts.prompts import build_prompt
 from agents.context_management.enums import SectionID
 from agents.context_management.session_contexts.contexts import SectionContextBase
 import os
-import rich
 
 class InterviewerAgent:
     def __init__(self):
