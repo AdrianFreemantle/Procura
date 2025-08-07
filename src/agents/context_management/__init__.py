@@ -1,2 +1,2 @@
 from .enums import SectionID
-from .session_contexts.contexts import SectionContext
+from .session_contexts.contexts import SectionContextBase

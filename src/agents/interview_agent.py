@@ -1,11 +1,11 @@
 from openai import OpenAI
 from agents.agent_prompts.prompts import build_prompt
 from agents.context_management.enums import SectionID
-from agents.context_management.session_contexts.contexts import SectionContext
+from agents.context_management.session_contexts.contexts import SectionContextBase
 import os
+import rich
 
 class InterviewerAgent:
-
     def __init__(self):
         self.client = OpenAI()
         self.model = os.getenv("INTERVIEW_MODEL", "gpt-4.1-mini")
@@ -13,7 +13,7 @@ class InterviewerAgent:
         self.conversation_history = []
         self.allowed_conversation_roles = {"user", "assistant"}
 
-    def interview(self, user_input: str, context: SectionContext):
+    def interview(self, user_input: str, context: SectionContextBase):
         self.conversation_history.append(self._msg("user", user_input))             
 
         input = self.conversation_history + [self._msg("developer", self._build_developer_prompt(context))]
@@ -21,16 +21,20 @@ class InterviewerAgent:
         with self.client.responses.stream(
             model=self.model,
             input=input,
-            instructions=self._build_system_prompt(context.current_section),
+            instructions=self._build_system_prompt(context),
             temperature=self.temperature            
         ) as stream:    
             yield from self._process_stream(stream)
     
-    def _build_system_prompt(self, section_id: SectionID):
-        return build_prompt(section_id, "interviewer")
+    def _build_system_prompt(self, context: SectionContextBase):
+        prompt = build_prompt(context.section_id, "interviewer")
+        #rich.print("SYSTEM PROMPT: " + prompt)
+        return prompt
 
-    def _build_developer_prompt(self, context: SectionContext):
-        return "Next question: " + context.next_question + "\n\nContext: " + context.model_dump_json()
+    def _build_developer_prompt(self, context: SectionContextBase):
+        prompt = context.model_dump_json(indent=1)
+        #rich.print("DEVELOPER PROMPT: " + prompt)
+        return prompt
 
     def _process_stream(self, stream):
         for event in stream:

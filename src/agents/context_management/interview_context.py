@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from agents.context_management.session_contexts.section_context import SectionContext, SectionID
+from agents.context_management.session_contexts.section_context import SectionContextBase, SectionID
 import rich
 
 # -----------------------------
@@ -8,24 +8,27 @@ import rich
 # -----------------------------
 
 class InterviewContext(BaseModel):
-    current_section: SectionID = Field(default=SectionID.S101, description="Which section the interview is currently in")
-    sections: List[SectionContext] = Field(default_factory=list, description="All section contexts containing facts and status")
+    section_id: SectionID = Field(default=SectionID.S101, description="Which section the interview is currently in")
+    sections: List[SectionContextBase] = Field(default_factory=list, description="All section contexts containing facts and status")
 
-    def get_section(self, section_id: SectionID) -> Optional[SectionContext]:
-        return next((s for s in self.sections if s.section == section_id), None)
+    def get_section(self, section_id: SectionID) -> Optional[SectionContextBase]:
+        return next((s for s in self.sections if s.section_id == section_id), None)
 
-    def get_current_section(self) -> Optional[SectionContext]:
-        return self.get_section(self.current_section)
+    def get_current_section(self) -> Optional[SectionContextBase]:
+        return self.get_section(self.section_id)
 
-    def update_section(self, new_section: SectionContext) -> None:
+    def next_section(self) -> None:
+        return ""
+
+    def update_section(self, new_section: SectionContextBase) -> None:
         for idx, section in enumerate(self.sections):
-            if section.section == new_section.section:
+            if section.section_id == new_section.section_id:
                 self.sections[idx] = new_section
                 return
-        raise ValueError(f"Section {new_section.section} not found in InterviewContext.")
+        raise ValueError(f"Section {new_section.section_id} not found in InterviewContext.")
     
     def print(self):
-        rich.print(self.model_dump_json(indent=2))         
+        rich.print("INTERVIEW CONTEXT: " + self.model_dump_json(indent=1))         
 
     def print_current_section(self):
-        rich.print(self.get_current_section().model_dump_json(indent=2))         
+        rich.print("CURRENT SECTION: " + self.get_current_section().model_dump_json(indent=1))         

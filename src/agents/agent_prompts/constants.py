@@ -1,15 +1,12 @@
 SECTION_S101_DEFINITION = """
 SECTION S101 RULES:
 ===========
-id: S101  # string
-title: "Purchaser's Objectives"  # string
-purpose: "Explains why the Purchaser needs the goods"  # string
-reason: >  # string (multi-line)
+id: S101
+title: "Purchaser's Objectives"
+purpose: "Explains why the Purchaser needs the goods"
+reason: >
   Helps the Supplier understand what the Purchaser is trying to achieve and sets
   the context for evaluating the suitability of the goods.
-
-context_object: "s101_facts"  # name of associated context object
-mandatory: true  
 
 nec4_scc_clause_refs:  
   - "11.2(11)(a)"

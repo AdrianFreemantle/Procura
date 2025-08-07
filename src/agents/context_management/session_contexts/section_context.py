@@ -26,8 +26,12 @@ class NamedFact(BaseModel):
 # SECTION CONTEXT MODEL
 # -----------------------------
 
-class SectionContext(BaseModel):
-    section: SectionID = Field(default=SectionID.S101, description="Which contract section this context represents")
-    facts: List[NamedFact] = Field(default_factory=list, description="List of facts to capture for this section")
+class SectionContextBase(BaseModel):
+    section_id: SectionID = Field(default=SectionID.S101, description="Which contract section this context represents")
+    section_status: Literal["pending", "in_progress", "complete"] = Field(default="pending", description="Whether all facts are complete")
     next_question: str = Field(default="", description="Next interview question to ask")
-    section_status: Literal["in_progress", "complete"] = Field(default="in_progress", description="Whether all facts are complete")
+    facts: List[NamedFact] = Field(default_factory=list, description="List of facts to capture for this section") 
+
+class GenericSectionContext(SectionContextBase):
+    pass
+
