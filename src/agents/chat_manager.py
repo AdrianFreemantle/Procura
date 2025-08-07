@@ -1,7 +1,7 @@
-from agents.context import Context
+import rich
 from agents.facts_agent import FactsAgent
 from agents.interview_agent import InterviewerAgent
-import rich
+from agents.context_management import Context
 
 class ChatManager:
     def __init__(self):

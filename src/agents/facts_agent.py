@@ -1,7 +1,6 @@
 from openai import OpenAI
-from agents.context import Context
-from agents.enums import SectionID
-from agents.prompts import build_prompt
+from agents.context_management import *
+
 import os
 
 class FactsAgent:

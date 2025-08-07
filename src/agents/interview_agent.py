@@ -1,7 +1,7 @@
 from openai import OpenAI
-from agents.context import Context
-from agents.prompts import build_prompt
-from agents.enums import SectionID
+from agents.context_management import Context
+from agents.agent_prompts.prompts import build_prompt
+from agents.context_management.enums import SectionID
 import os
 
 class InterviewerAgent:

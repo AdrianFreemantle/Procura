@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Literal
-from agents.enums import SectionID 
+from agents.context_management.enums import SectionID 
 from typing import Optional 
 
 SectionStatus = Literal["not_started", "in_progress", "complete", "not_applicable"]

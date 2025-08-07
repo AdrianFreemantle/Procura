@@ -1,13 +1,6 @@
-from agents.enums import SectionID, PromptRole 
-
-from agents.agent_prompts import base_prompts
-from agents.context import S101_Facts
-
-from agents.constants import (
-    SECTION_S101_DEFINITION,
-    SECTION_S102_DEFINITION,
-    SECTION_S103_DEFINITION,
-)
+from agents.context_management import SectionID 
+from agents.agent_prompts import *
+from enum import Enum
 
 SECTION_DEFINITIONS = {
     "S101": SECTION_S101_DEFINITION,
@@ -15,6 +8,10 @@ SECTION_DEFINITIONS = {
     "S103": SECTION_S103_DEFINITION,
     # Add more as needed
 }
+
+class PromptRole(str, Enum):
+    INTERVIEWER = "interviewer"
+    FACT_EVALUATOR = "fact_evaluator"    
 
 def generate_schema_block(section_id, model_class):
     lines = [f"FACTS SCHEMA FOR {section_id}", "="*10]
