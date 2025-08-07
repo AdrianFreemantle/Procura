@@ -4,38 +4,58 @@ from agents.enums import SectionID
 
 SectionStatus = Literal["not_started", "in_progress", "complete", "not_applicable"]
 
+from pydantic import BaseModel, Field
+from typing import Literal
+
+class SectionContext(BaseModel):
+    section_status: Literal["in_progress", "complete"] = Field(
+        default="in_progress", 
+        description="Completion status of the section based on captured facts."
+    )
+
+    next_question: str = Field(
+        default="", 
+        description="Next question to ask"
+    )
+
+    facts
+
 class S101_Facts(BaseModel):
-    section_status: SectionStatus = Field(default="in_progress", description="Completion status for Section")
-    
-    business_problem_or_need: str = Field(
-        default="", 
-        description="The primary business problem, inefficiency, or risk the Purchaser is aiming to solve by acquiring these goods"
+    section_status: Literal["in_progress", "complete"] = Field(
+        default="in_progress", 
+        description="Completion status of the section based on captured facts."
     )
-    
-    strategic_objectives: str = Field(
+
+    business_need_or_driver: str = Field(
         default="", 
-        description="High-level goals or motivations driving the procurement (e.g., compliance, capacity expansion, modernisation)"
+        description="The primary operational issue, risk, or inefficiency that motivates the procurement."
     )
-    
-    intended_outcomes_or_benefits: str = Field(
+
+    strategic_goals: str = Field(
         default="", 
-        description="Tangible or intangible benefits expected from successful delivery (e.g., cost savings, safety improvements, reduced downtime)"
+        description="Long-term objectives or strategic motivations behind the purchase (e.g. modernization, compliance, growth)."
     )
-    
-    current_pain_points_or_limitations: str = Field(
+
+    intended_operational_outcomes: str = Field(
         default="", 
-        description="Key operational challenges or limitations in the existing system that the new goods are intended to address"
+        description="Desired improvements from successful delivery (e.g. reduced downtime, improved safety, cost savings)."
     )
-    
+
+    existing_operational_issues: str = Field(
+        default="", 
+        description="Known limitations, risks, or challenges with current systems or processes that the procurement aims to address."
+    )
+
     assets_being_replaced_or_upgraded: str = Field(
         default="", 
-        description="Whether this purchase is replacing/upgrading existing assets, and if so, a brief description of what is being replaced"
+        description="Existing assets, equipment, or systems that will be replaced or upgraded as part of this procurement."
     )
-    
-    constraints_driving_procurement: str = Field(
+
+    procurement_constraints: str = Field(
         default="", 
-        description="External or internal constraints (e.g., regulatory deadlines, space limitations, performance thresholds) that shape the procurement need"
+        description="Internal or external constraints affecting procurement (e.g. deadlines, regulations, physical limitations)."
     )
+
 
 class S102_Facts(BaseModel):
     section_status: SectionStatus = Field(default="not_started", description="Completion status for Section")
@@ -63,9 +83,8 @@ class S103_Facts(BaseModel):
     general_notes: str = Field(default="", description="General notes about drawings, including format expectations or coordination notes")
 
 class Context(BaseModel):
-    next_question: str = Field(default="What is the strategic reason for procuring the goods?", description="Next question to ask")
+    next_question: str = Field(default="Start the interview by greeting the user. Ask if they have any background information they would like to share.", description="Next question to ask")
     current_section: SectionID = Field(default=SectionID.S101, description="Current section of the NEC4 SCC contract")
     s101_facts: S101_Facts = Field(default_factory=S101_Facts, description="Purchaser's Objectives")
     s102_facts: S102_Facts = Field(default_factory=S102_Facts, description="Description of the Goods")
     s103_facts: S103_Facts = Field(default_factory=S103_Facts, description="Drawings")
-

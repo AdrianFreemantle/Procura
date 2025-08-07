@@ -31,12 +31,6 @@ out_of_scope_topics:
   - "Software, hardware, or infrastructure specifics"
   - "Standards or compliance frameworks (e.g., ISO) — belongs in S200-series"
 
-question_templates:
-  - "What problem or challenge is this procurement meant to solve?"
-  - "What outcome is the Purchaser aiming to achieve by buying these goods?"
-  - "What benefits would success deliver — time savings, safety, cost reduction?"
-  - "Are any systems or assets being replaced or upgraded as part of this?"
-
 completion_rules:
   - "All fact fields in the S101_Facts object are marked as 'N/A' or have a valid value"
   - "Purchaser has been shown a summary of all facts collected for section S101"

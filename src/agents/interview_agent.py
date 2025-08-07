@@ -2,6 +2,7 @@ from openai import OpenAI
 from agents.context import Context
 from agents.prompts import build_prompt
 from agents.enums import SectionID
+import os
 
 class InterviewerAgent:
 
@@ -11,8 +12,6 @@ class InterviewerAgent:
         self.temperature = float(os.getenv("INTERVIEW_TEMP", 0.7))
         self.conversation_history = []
         self.allowed_conversation_roles = {"user", "assistant"}
-        #HACK: we populate the conversation history with the initial greeting here and in the ui.py to simplify the greeting process
-        self.conversation_history.append(self._msg("assistant", "Hello! I am here to assist you in gathering information to draft an NEC4 Supply Short Contract."))
 
     def interview(self, user_input: str, context: Context):
         self.conversation_history.append(self._msg("user", user_input))             

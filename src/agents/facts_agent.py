@@ -2,6 +2,7 @@ from openai import OpenAI
 from agents.context import Context
 from agents.enums import SectionID
 from agents.prompts import build_prompt
+import os
 
 class FactsAgent:
     def __init__(self):

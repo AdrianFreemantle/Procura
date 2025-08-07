@@ -1,10 +1,10 @@
 import gradio as gr
 
 from agents.chat_manager import ChatManager
-from agents.markdown_agent import MarkdownAgent
+#from agents.markdown_agent import MarkdownAgent
 
 chat_manager = ChatManager()
-markdown_agent = MarkdownAgent()
+#markdown_agent = MarkdownAgent()
 
 # -----------------------------------------------------------------------------
 # Gradio UI --------------------------------------------------------------------
@@ -56,8 +56,7 @@ def create_interface() -> gr.Blocks:
                     label=None,
                     elem_id="chatbot",
                     container=True,
-                    type="messages",
-                    value=[{"role": "assistant", "content": "Hello! I am here to assist you in gathering information to draft an NEC4 Supply Short Contract."}]
+                    type="messages"
                 )
             with gr.Column(scale=2):
                 markdown_output = gr.Markdown(
@@ -115,13 +114,13 @@ def create_interface() -> gr.Blocks:
             fn=send_message,
             inputs=[message_state, chatbot],
             outputs=[chatbot],
-        )
+        )        
 
         def handle_markdown_generation():
             """Wrapper to convert agent output to gr.update format for proper markdown rendering"""
             for content in markdown_agent.generate():
                 yield gr.update(value=content)
 
-        draft_btn.click(handle_markdown_generation, inputs=[], outputs=markdown_output)
+        # draft_btn.click(handle_markdown_generation, inputs=[], outputs=markdown_output)
 
     return demo
