@@ -1,6 +1,7 @@
 from openai import OpenAI
 from agents.context_management import *
 from agents.agent_prompts.prompts import build_prompt
+from agents.context_management.session_contexts.contexts import SectionContext
 
 import os
 
@@ -11,7 +12,7 @@ class FactsAgent:
         self.temperature = float(os.getenv("FACTS_TEMP", 0.0))
         self.conversation_history = []
 
-    def evaluate(self, history: list[dict[str, str]], context: Context) -> Context:      
+    def evaluate(self, history: list[dict[str, str]], context: SectionContext) -> SectionContext:      
         response = self.client.responses.parse(            
             model=self.model,            
             temperature=self.temperature,
@@ -20,7 +21,7 @@ class FactsAgent:
                 self._msg("developer", context.model_dump_json()),
                 self._msg("user", "get facts")
             ] + history,
-            text_format=Context
+            text_format=SectionContext
         )
 
         new_context = response.output_parsed

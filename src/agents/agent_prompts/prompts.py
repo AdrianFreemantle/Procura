@@ -1,6 +1,6 @@
 from agents.context_management import SectionID 
 from agents.agent_prompts import *
-from agents.context_management.context import S101_Facts
+from agents.context_management.session_contexts.contexts import S101_CONTEXT
 from enum import Enum
 
 SECTION_DEFINITIONS = {
@@ -31,7 +31,7 @@ def build_prompt(section_id: SectionID, role: PromptRole) -> str:
     if section_key not in SECTION_DEFINITIONS:
         raise ValueError(f"Unknown section ID: {section_key}") 
 
-    schema_block = generate_schema_block(section_id, S101_Facts)
+    schema_block = generate_schema_block(section_id, S101_CONTEXT)
     
     if role == PromptRole.FACT_EVALUATOR:
         return base_prompts.FACT_EVALUATOR_PROMPT + "\n\n" + schema_block

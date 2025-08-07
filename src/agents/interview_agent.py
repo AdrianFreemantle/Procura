@@ -1,7 +1,7 @@
 from openai import OpenAI
-from agents.context_management import Context
 from agents.agent_prompts.prompts import build_prompt
 from agents.context_management.enums import SectionID
+from agents.context_management.session_contexts.contexts import SectionContext
 import os
 
 class InterviewerAgent:
@@ -13,7 +13,7 @@ class InterviewerAgent:
         self.conversation_history = []
         self.allowed_conversation_roles = {"user", "assistant"}
 
-    def interview(self, user_input: str, context: Context):
+    def interview(self, user_input: str, context: SectionContext):
         self.conversation_history.append(self._msg("user", user_input))             
 
         input = self.conversation_history + [self._msg("developer", self._build_developer_prompt(context))]
@@ -29,7 +29,7 @@ class InterviewerAgent:
     def _build_system_prompt(self, section_id: SectionID):
         return build_prompt(section_id, "interviewer")
 
-    def _build_developer_prompt(self, context: Context):
+    def _build_developer_prompt(self, context: SectionContext):
         return "Next question: " + context.next_question + "\n\nContext: " + context.model_dump_json()
 
     def _process_stream(self, stream):

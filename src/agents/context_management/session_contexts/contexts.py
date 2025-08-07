@@ -1,11 +1,7 @@
-from ast import List
-from section_context import SectionContext, SectionID, Fact, NamedFact
+from typing import List
+from pydantic import BaseModel, Field
+from .section_context import SectionContext, SectionID, Fact, NamedFact
 
-SECTION_CONTEXTS: List[SectionContext] = [
-    S101_CONTEXT, 
-    S102_CONTEXT, 
-    S103_CONTEXT
-]
 
 S101_CONTEXT: SectionContext = SectionContext(
     section=SectionID.S101,
@@ -148,3 +144,13 @@ S103_CONTEXT: SectionContext = SectionContext(
         )
     ]
 )
+
+
+
+
+
+CONTEXTS: List[SectionContext] = [
+    S101_CONTEXT, 
+    S102_CONTEXT, 
+    S103_CONTEXT
+]
