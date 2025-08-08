@@ -1,22 +1,20 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from agents.context_management.session_contexts.section_context import SectionContextBase, SectionID
-
+import uuid
+from datetime import datetime
 # -----------------------------
 # GLOBAL CONTEXT MODEL
 # -----------------------------
 
 class InterviewContext(BaseModel):
+    context_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the interview context")
+    context_name: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Name of the interview context")
     section_id: SectionID = Field(default=SectionID.S101, description="Which section the interview is currently in")
     sections: List[SectionContextBase] = Field(default_factory=list, description="All section contexts containing facts and status")
     conversation_history: List[dict[str, str]] = Field(default_factory=list, description="Conversation history")
 
     def get_conversation(self) -> list[dict[str, str]]:
-        # formatted = []
-        # for message in self.conversation_history:
-        #     role = message.get("role")
-        #     content = message.get("content", "")
-        #     formatted.append(self._msg(role, content))
         return self.conversation_history  
 
     def conversation_append(self, role: str, message: str):
