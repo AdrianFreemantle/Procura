@@ -7,16 +7,19 @@ from agents.context_management.persistence.sqlite_store import SqlLiteContextSto
 from agents.context_management.interview_context import InterviewContext
 from agents.context_management.session_contexts.section_context import SectionContextBase, SectionID
 
-def make_sample_context(context_id=1):
+def make_sample_context(context_id=None, context_status="empty"):
   section = SectionContextBase(section_id=SectionID.S101, section_status="pending", next_question="Q1", facts=[])
-  ctx = InterviewContext(context_id=context_id, context_name="Test", section_id=SectionID.S101, sections=[section], conversation_history=[])
+  ctx = InterviewContext(context_id=context_id, context_name="Test", context_status=context_status, section_id=SectionID.S101, sections=[section], conversation_history=[])
   return ctx
 
 def test_store_and_get_context():
   store = SqlLiteContextStore(db_path=":memory:")
   ctx = make_sample_context()
-  store.store_context(ctx)
+  print(f"Before store: context_id = {ctx.context_id}")
+  assigned_id = store.store_context(ctx)
+  print(f"After store: context_id = {ctx.context_id}, assigned_id = {assigned_id}")
   loaded = store.get_context(ctx.context_id)
+  print(f"Loaded context: {loaded}")
   assert loaded is not None
   assert loaded.context_id == ctx.context_id
   assert loaded.sections[0].section_id == ctx.sections[0].section_id

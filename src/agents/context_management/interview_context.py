@@ -9,6 +9,7 @@ from datetime import datetime
 class InterviewContext(BaseModel):
     context_id: Optional[int] = Field(default=None, description="Unique identifier for the interview context")
     context_name: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Name of the interview context")
+    context_status: str = Field(default="empty", description="Status of the context: empty, active, archived")
     section_id: SectionID = Field(default=SectionID.S101, description="Which section the interview is currently in")
     sections: List[SectionContextBase] = Field(default_factory=list, description="All section contexts containing facts and status")
     conversation_history: List[dict[str, str]] = Field(default_factory=list, description="Conversation history")

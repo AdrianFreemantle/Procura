@@ -1,6 +1,7 @@
-
 import sqlite3
 import json
+from datetime import datetime
+from typing import List, Dict, Optional, Any
 from agents.context_management.interview_context import InterviewContext
 
 class SqlLiteContextStore:
@@ -24,8 +25,11 @@ class SqlLiteContextStore:
       conn.execute(
         """
         CREATE TABLE IF NOT EXISTS contexts (
-          context_id TEXT PRIMARY KEY,
-          context_json TEXT NOT NULL
+          context_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          context_name TEXT NOT NULL,
+          context_status TEXT NOT NULL DEFAULT 'empty',
+          context_json TEXT NOT NULL,
+          last_updated DATETIME NOT NULL
         )
         """
       )
@@ -34,7 +38,7 @@ class SqlLiteContextStore:
       if not self._conn:
         conn.close()
 
-  def get_context(self, context_id: str) -> InterviewContext | None:
+  def get_context(self, context_id: int) -> InterviewContext | None:
     conn = self._get_connection()
     try:
       cur = conn.execute(
@@ -50,20 +54,43 @@ class SqlLiteContextStore:
       if not self._conn:
         conn.close()
 
-  def store_context(self, context: InterviewContext):
+  def store_context(self, context: InterviewContext) -> int:
+    """Store context and return the context_id (auto-assigned for new contexts)"""
     conn = self._get_connection()
     try:
-      context_json = context.model_dump_json()
-      conn.execute(
-        "REPLACE INTO contexts (context_id, context_json) VALUES (?, ?)",
-        (context.context_id, context_json)
-      )
+      now = datetime.now().isoformat()
+      
+      if context.context_id is None:
+        # Insert new context
+        cur = conn.execute(
+          "INSERT INTO contexts (context_name, context_status, context_json, last_updated) VALUES (?, ?, ?, ?)",
+          (context.context_name, context.context_status, "", now)
+        )
+        context_id = cur.lastrowid
+        context.context_id = context_id
+        # Now serialize with the assigned ID
+        context_json = context.model_dump_json()
+        # Update with the serialized JSON containing the correct ID
+        conn.execute(
+          "UPDATE contexts SET context_json = ? WHERE context_id = ?",
+          (context_json, context_id)
+        )
+      else:
+        # Update existing context - serialize with existing ID
+        context_json = context.model_dump_json()
+        conn.execute(
+          "UPDATE contexts SET context_name = ?, context_status = ?, context_json = ?, last_updated = ? WHERE context_id = ?",
+          (context.context_name, context.context_status, context_json, now, context.context_id)
+        )
+        context_id = context.context_id
+      
       conn.commit()
+      return context_id
     finally:
       if not self._conn:
         conn.close()
 
-  def remove_context(self, context_id: str):
+  def remove_context(self, context_id: int):
     conn = self._get_connection()
     try:
       conn.execute(
@@ -71,6 +98,47 @@ class SqlLiteContextStore:
         (context_id,)
       )
       conn.commit()
+    finally:
+      if not self._conn:
+        conn.close()
+
+  def list_contexts(self, current_context_id: int = None) -> List[Dict[str, Any]]:
+    """Returns list of contexts with id, name, status, and last_updated, ordered by last_updated desc.
+    Filters out 'empty' contexts except for the current_context_id (union approach)."""
+    conn = self._get_connection()
+    try:
+      if current_context_id is not None:
+        # Union approach: get active/archived contexts + current context (even if empty)
+        cur = conn.execute(
+          """
+          SELECT context_id, context_name, context_status, last_updated 
+          FROM contexts 
+          WHERE context_status != 'empty' OR context_id = ?
+          ORDER BY last_updated DESC
+          """,
+          (current_context_id,)
+        )
+      else:
+        # No current context, just return active/archived contexts
+        cur = conn.execute(
+          """
+          SELECT context_id, context_name, context_status, last_updated 
+          FROM contexts 
+          WHERE context_status != 'empty'
+          ORDER BY last_updated DESC
+          """
+        )
+      
+      rows = cur.fetchall()
+      return [
+        {
+          "context_id": row[0],
+          "context_name": row[1],
+          "context_status": row[2],
+          "last_updated": row[3]
+        }
+        for row in rows
+      ]
     finally:
       if not self._conn:
         conn.close()
