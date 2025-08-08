@@ -20,3 +20,6 @@ sdk_examples/
 
 # Placeholder files
 .keep
+
+# Logs
+logs/

@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Dict, Optional, Any
 from agents.context_management.interview_context import InterviewContext
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -11,8 +12,10 @@ class SqlLiteContextStore:
   def __init__(self, db_path: str = ":memory:"):
     self.db_path = db_path
     self._conn = None
+    self._lock = threading.Lock()
     if db_path == ":memory:":
-      self._conn = sqlite3.connect(db_path)
+      # Allow use across worker threads (Gradio) and protect with a lock
+      self._conn = sqlite3.connect(db_path, check_same_thread=False)
       self._ensure_table(self._conn)
     else:
       self._ensure_table()
@@ -26,18 +29,19 @@ class SqlLiteContextStore:
   def _ensure_table(self, conn=None):
     conn = conn or self._get_connection()
     try:
-      conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS contexts (
-          context_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          context_name TEXT NOT NULL,
-          context_status TEXT NOT NULL DEFAULT 'empty',
-          context_json TEXT NOT NULL,
-          last_updated DATETIME NOT NULL
+      with self._lock:
+        conn.execute(
+          """
+          CREATE TABLE IF NOT EXISTS contexts (
+            context_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            context_name TEXT NOT NULL,
+            context_status TEXT NOT NULL DEFAULT 'empty',
+            context_json TEXT NOT NULL,
+            last_updated DATETIME NOT NULL
+          )
+          """
         )
-        """
-      )
-      conn.commit()
+        conn.commit()
       logger.info("Ensured 'contexts' table exists")
     finally:
       if not self._conn:
@@ -47,14 +51,16 @@ class SqlLiteContextStore:
     conn = self._get_connection()
     try:
       logger.info("Fetching context id=%s", context_id)
-      cur = conn.execute(
-        "SELECT context_json FROM contexts WHERE context_id = ?",
-        (context_id,)
-      )
-      row = cur.fetchone()
+      with self._lock:
+        cur = conn.execute(
+          "SELECT context_json FROM contexts WHERE context_id = ?",
+          (context_id,)
+        )
+        row = cur.fetchone()
       if row:
         data = json.loads(row[0])
         context = InterviewContext.model_validate(data)
+        
         logger.info("Fetched context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)
         return context
       logger.warning("Context id=%s not found", context_id)
@@ -68,35 +74,34 @@ class SqlLiteContextStore:
     conn = self._get_connection()
     try:
       now = datetime.now().isoformat()
-      
-      if context.context_id is None:
-        # Insert new context
-        logger.info("Inserting new context name='%s' status=%s", context.context_name, context.context_status)
-        cur = conn.execute(
-          "INSERT INTO contexts (context_name, context_status, context_json, last_updated) VALUES (?, ?, ?, ?)",
-          (context.context_name, context.context_status, "", now)
-        )
-        context_id = cur.lastrowid
-        context.context_id = context_id
-        # Now serialize with the assigned ID
-        context_json = context.model_dump_json()
-        # Update with the serialized JSON containing the correct ID
-        conn.execute(
-          "UPDATE contexts SET context_json = ? WHERE context_id = ?",
-          (context_json, context_id)
-        )
-        logger.info("Inserted context id=%s", context_id)
-      else:
-        # Update existing context - serialize with existing ID
-        logger.info("Updating context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)
-        context_json = context.model_dump_json()
-        conn.execute(
-          "UPDATE contexts SET context_name = ?, context_status = ?, context_json = ?, last_updated = ? WHERE context_id = ?",
-          (context.context_name, context.context_status, context_json, now, context.context_id)
-        )
-        context_id = context.context_id
-      
-      conn.commit()
+      with self._lock:
+        if context.context_id is None:
+          # Insert new context
+          logger.info("Inserting new context name='%s' status=%s", context.context_name, context.context_status)
+          cur = conn.execute(
+            "INSERT INTO contexts (context_name, context_status, context_json, last_updated) VALUES (?, ?, ?, ?)",
+            (context.context_name, context.context_status, "", now)
+          )
+          context_id = cur.lastrowid
+          context.context_id = context_id
+          # Now serialize with the assigned ID
+          context_json = context.model_dump_json()
+          # Update with the serialized JSON containing the correct ID
+          conn.execute(
+            "UPDATE contexts SET context_json = ? WHERE context_id = ?",
+            (context_json, context_id)
+          )
+          logger.info("Inserted context id=%s", context_id)
+        else:
+          # Update existing context - serialize with existing ID
+          logger.info("Updating context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)
+          context_json = context.model_dump_json()
+          conn.execute(
+            "UPDATE contexts SET context_name = ?, context_status = ?, context_json = ?, last_updated = ? WHERE context_id = ?",
+            (context.context_name, context.context_status, context_json, now, context.context_id)
+          )
+          context_id = context.context_id
+        conn.commit()
       return context_id
     finally:
       if not self._conn:
@@ -106,11 +111,12 @@ class SqlLiteContextStore:
     conn = self._get_connection()
     try:
       logger.info("Removing context id=%s", context_id)
-      conn.execute(
-        "DELETE FROM contexts WHERE context_id = ?",
-        (context_id,)
-      )
-      conn.commit()
+      with self._lock:
+        conn.execute(
+          "DELETE FROM contexts WHERE context_id = ?",
+          (context_id,)
+        )
+        conn.commit()
     finally:
       if not self._conn:
         conn.close()
@@ -121,29 +127,29 @@ class SqlLiteContextStore:
     conn = self._get_connection()
     try:
       logger.info("Listing contexts (current_context_id=%s)", current_context_id)
-      if current_context_id is not None:
-        # Union approach: get active/archived contexts + current context (even if empty)
-        cur = conn.execute(
-          """
-          SELECT context_id, context_name, context_status, last_updated 
-          FROM contexts 
-          WHERE context_status != 'empty' OR context_id = ?
-          ORDER BY last_updated DESC
-          """,
-          (current_context_id,)
-        )
-      else:
-        # No current context, just return active/archived contexts
-        cur = conn.execute(
-          """
-          SELECT context_id, context_name, context_status, last_updated 
-          FROM contexts 
-          WHERE context_status != 'empty'
-          ORDER BY last_updated DESC
-          """
-        )
-      
-      rows = cur.fetchall()
+      with self._lock:
+        if current_context_id is not None:
+          # Union approach: get active/archived contexts + current context (even if empty)
+          cur = conn.execute(
+            """
+            SELECT context_id, context_name, context_status, last_updated 
+            FROM contexts 
+            WHERE context_status != 'empty' OR context_id = ?
+            ORDER BY last_updated DESC
+            """,
+            (current_context_id,)
+          )
+        else:
+          # No current context, just return active/archived contexts
+          cur = conn.execute(
+            """
+            SELECT context_id, context_name, context_status, last_updated 
+            FROM contexts 
+            WHERE context_status != 'empty'
+            ORDER BY last_updated DESC
+            """
+          )
+        rows = cur.fetchall()
       logger.info("Listed %d contexts", len(rows))
       return [
         {
@@ -159,7 +165,8 @@ class SqlLiteContextStore:
         conn.close()
 
   def close(self):
-    if self._conn:
-      self._conn.close()
-      self._conn = None
-      logger.info("SqlLiteContextStore connection closed")
+    with self._lock:
+      if self._conn:
+        self._conn.close()
+        self._conn = None
+        logger.info("SqlLiteContextStore connection closed")
