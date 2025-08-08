@@ -9,6 +9,24 @@ from agents.context_management.session_contexts.section_context import SectionCo
 class InterviewContext(BaseModel):
     section_id: SectionID = Field(default=SectionID.S101, description="Which section the interview is currently in")
     sections: List[SectionContextBase] = Field(default_factory=list, description="All section contexts containing facts and status")
+    conversation_history: List[dict[str, str]] = Field(default_factory=list, description="Conversation history")
+
+    def get_conversation(self) -> list[dict[str, str]]:
+        # formatted = []
+        # for message in self.conversation_history:
+        #     role = message.get("role")
+        #     content = message.get("content", "")
+        #     formatted.append(self._msg(role, content))
+        return self.conversation_history  
+
+    def conversation_append(self, role: str, message: str):
+        if role not in {"user", "assistant"}:
+            return
+        self.conversation_history.append(self._msg(role, message))     
+        return self.conversation_history   
+
+    def _msg(self,role: str, content: str) -> dict:
+        return {"role": role, "content": content}  
 
     def get_section(self, section_id: SectionID) -> Optional[SectionContextBase]:
         return next((s for s in self.sections if s.section_id == section_id), None)

@@ -1,6 +1,7 @@
 from openai import OpenAI
 from agents.context_management import *
 from agents.agent_prompts.prompts import build_prompt
+from agents.context_management.interview_context import InterviewContext
 from agents.context_management.session_contexts.contexts import SectionContextBase, SECTION_CONTEXT_TYPES
 
 import os
@@ -13,7 +14,8 @@ class FactsAgent:
         self.max_tokens = int(os.getenv("FACTS_MAX_TOKENS", 1000))
         self.conversation_history = []
 
-    def evaluate(self, history: list[dict[str, str]], context: SectionContextBase) -> SectionContextBase:      
+    def evaluate(self, main_context: InterviewContext) -> SectionContextBase:      
+        context = main_context.get_current_section()
         response = self.client.responses.parse(            
             model=self.model,            
             temperature=self.temperature,
@@ -22,7 +24,7 @@ class FactsAgent:
             input=[
                 self._msg("developer", context.model_dump_json()),
                 self._msg("user", "get facts")
-            ] + history,
+            ] + main_context.get_conversation(),
             text_format=SECTION_CONTEXT_TYPES[context.section_id]            
         )
         

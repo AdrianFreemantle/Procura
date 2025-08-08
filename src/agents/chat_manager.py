@@ -16,12 +16,11 @@ class ChatManager:
     def _msg(self,role: str, content: str) -> dict:
         return {"role": role, "content": content}    
 
-    def chat(self, user_input: str):
-        user_message = [self._msg("user", user_input)]
+    def chat(self, user_input: str): 
+        self.context.conversation_append("user", user_input)
 
-        history = self.interviewer_agent.get_conversation_history()     
         start_time = time.perf_counter()
-        new_context = self.facts_agent.evaluate(history + user_message, self.context.get_current_section())    
+        new_context = self.facts_agent.evaluate(self.context)            
         rich.print("FACTS AGENT OUTPUT: " + new_context.model_dump_json(indent=1))     
         end_time = time.perf_counter()   
         print(f"Facts call took {end_time - start_time:.2f} seconds")
@@ -31,9 +30,6 @@ class ChatManager:
             self.context.advance_to_next_section()                     
 
         start_time = time.perf_counter()
-        yield from self.interviewer_agent.interview(user_input=user_input, context=self.context.get_current_section())               
+        yield from self.interviewer_agent.interview(self.context)               
         end_time = time.perf_counter()
-        print(f"Interview call took {end_time - start_time:.2f} seconds")   
-
-        return self.context.get_current_section()                          
-        
+        print(f"Interview call took {end_time - start_time:.2f} seconds")
