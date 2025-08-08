@@ -1,47 +1,31 @@
 
 SECTION_S101_DEFINITION = """
-SECTION S101 RULES:
+CURRENT SECTION RULES:
 ===========
-id: S101  # string
-title: "Purchaser's Objectives"  # string
-purpose: "Explains why the Purchaser needs the goods"  # string
-reason: >  # string (multi-line)
-  Helps the Supplier understand what the Purchaser is trying to achieve and sets
-  the context for evaluating the suitability of the goods.
+IMPORTANT: 
+- 'CURRENT SECTION RULES' OVERRIDE all other subsequent rules or instructions.
+- When in doubt, follow guidance in 'SECTION RULES'
+- generic rules are injected below SECTION RULES, but SECTION RULES still take precedence 
 
-context_object: "s101_facts"  # name of associated context object
-mandatory: true  
+CURRENT SECTION ID: S101
+CURRENT SECTION TITLE: Purchaser's Objectives
+CUURENT SECTION PURPOSE: 
+ - A High-Level explanation of why the Purchaser needs the goods
+ - Helps the Supplier understand what the Purchaser is trying to achieve and sets the context for evaluating the suitability of the goods.
 
-nec4_scc_clause_refs:  
-  - "11.2(11)(a)"
+CUURENT SECTION INTERVIEW GUIDANCE:
+  - Focus on HIGH-LEVEL business drivers, not features or specifics
+  - Explore operational pain points, strategic goals, and constraints
+  - Ask for benefits in terms of improved outcomes, not technical performance
 
-cross_sectional_guidance::  
-  - "S102"
-
-depends_on_sections: []  # no dependencies
-
-interview_guidance:
-  - "Focus on business drivers, not features"
-  - "Explore operational pain points, strategic goals, and constraints"
-  - "Ask for benefits in terms of improved outcomes, not technical performance"
-  - "Treat vague answers (e.g., 'better system') as prompts for deeper inquiry"
-
-out_of_scope_topics:
-  - "Detailed technical specifications"
-  - "Implementation details or delivery methods"
-  - "Software, hardware, or infrastructure specifics"
-  - "Standards or compliance frameworks (e.g., ISO) — belongs in S200-series"
-
-question_templates:
-  - "What problem or challenge is this procurement meant to solve?"
-  - "What outcome is the Purchaser aiming to achieve by buying these goods?"
-  - "What benefits would success deliver — time savings, safety, cost reduction?"
-  - "Are any systems or assets being replaced or upgraded as part of this?"
-
-completion_rules:
-  - "All fact fields in the S101_Facts object are marked as 'N/A' or have a valid value"
-  - "Purchaser has been shown a summary of all facts collected for section S101"
-  - "Purchaser confirms that no additional relevant information remains"
+CUURENT SECTION RULES OVERRIDE:
+Any generic rules are injected after this section are overriden by these rules:
+  - This section DOES NOT specify the number of goods, rated capacity, manufacturer/model - That goes in S102
+  - AVOID: Asking for technical specifications e.g. capacity, dimensions, weight -That goes in S102
+  - AVOID: Asking for qauntities, delivery schedules, or payment terms - That goes in S104
+  - AVOID: Asking for quantitave values or specific metrics - That goes in S104
+  - AVOID: Asking for implementation details or delivery methods - That goes in S104
+  - AVOID: Asking for exact standards, compliance frameworks - That goes in S200
 ===========
 """
 

@@ -28,10 +28,12 @@ class ChatManager:
 
         self.context.update_section(new_context)        
         if new_context.section_status == "complete":
-            self.context.next_section()                     
+            self.context.advance_to_next_section()                     
 
         start_time = time.perf_counter()
         yield from self.interviewer_agent.interview(user_input=user_input, context=self.context.get_current_section())               
         end_time = time.perf_counter()
-        print(f"Interview call took {end_time - start_time:.2f} seconds")                             
+        print(f"Interview call took {end_time - start_time:.2f} seconds")   
+
+        return self.context.get_current_section()                          
         

@@ -9,6 +9,7 @@ class InterviewerAgent:
         self.client = OpenAI()
         self.model = os.getenv("INTERVIEW_MODEL", "gpt-4.1-mini")
         self.temperature = float(os.getenv("INTERVIEW_TEMP", 0.7))
+        self.max_tokens = int(os.getenv("INTERVIEW_MAX_TOKENS", 1000))
         self.conversation_history = []
         self.allowed_conversation_roles = {"user", "assistant"}
 
@@ -21,7 +22,8 @@ class InterviewerAgent:
             model=self.model,
             input=input,
             instructions=self._build_system_prompt(context),
-            temperature=self.temperature            
+            temperature=self.temperature,       
+            max_output_tokens=self.max_tokens, 
         ) as stream:    
             yield from self._process_stream(stream)
     
@@ -48,7 +50,7 @@ class InterviewerAgent:
         except (IndexError, AttributeError, TypeError):
             pass  # TODO: log error
 
-    def get_conversation_history(self):
+    def get_conversation_history(self) -> list[dict[str, str]]:
         formatted = []
         for message in self.conversation_history:
             role = message.get("role")

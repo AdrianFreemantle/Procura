@@ -16,8 +16,8 @@ class InterviewContext(BaseModel):
     def get_current_section(self) -> Optional[SectionContextBase]:
         return self.get_section(self.section_id)
 
-    def next_section(self) -> None:
-        return ""
+    def advance_to_next_section(self):
+        self.section_id = self.section_id.next()
 
     def update_section(self, new_section: SectionContextBase) -> None:
         for idx, section in enumerate(self.sections):

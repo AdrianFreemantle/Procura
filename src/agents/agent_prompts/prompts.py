@@ -40,9 +40,9 @@ def build_prompt(section_id: SectionID, role: PromptRole) -> str:
         raise ValueError(f"Unknown section ID: {section_id}") 
    
     if role == PromptRole.FACT_EVALUATOR:
-        return base_prompts.FACT_EVALUATOR_PROMPT# + "\n\n" + SECTION_DEFINITIONS[section_id]
+        return base_prompts.FACT_EVALUATOR_ROLE_PROMPT + "\n\n" + SECTION_DEFINITIONS[section_id] + "\n\n" + base_prompts.FACT_EVALUATOR_PROMPT
     
     if role == PromptRole.INTERVIEWER:        
-        return base_prompts.INTERVIEWER_PROMPT# + "\n\n" + SECTION_DEFINITIONS[section_id]
+        return base_prompts.INTERVIEWER_ROLE_PROMPT + "\n\n" + SECTION_DEFINITIONS[section_id] + "\n\n" + base_prompts.INTERVIEWER_PROMPT
     
     raise ValueError(f"Unknown role: {role}")
