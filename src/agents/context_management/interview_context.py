@@ -1,14 +1,13 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from agents.context_management.session_contexts.section_context import SectionContextBase, SectionID
-import uuid
 from datetime import datetime
 # -----------------------------
 # GLOBAL CONTEXT MODEL
 # -----------------------------
 
 class InterviewContext(BaseModel):
-    context_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the interview context")
+    context_id: Optional[int] = Field(default=None, description="Unique identifier for the interview context")
     context_name: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="Name of the interview context")
     section_id: SectionID = Field(default=SectionID.S101, description="Which section the interview is currently in")
     sections: List[SectionContextBase] = Field(default_factory=list, description="All section contexts containing facts and status")
@@ -41,4 +40,3 @@ class InterviewContext(BaseModel):
                 self.sections[idx] = new_section
                 return
         raise ValueError(f"Section {new_section.section_id} not found in InterviewContext.")
-        

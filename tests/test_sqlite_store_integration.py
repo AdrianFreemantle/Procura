@@ -7,7 +7,7 @@ from agents.context_management.persistence.sqlite_store import SqlLiteContextSto
 from agents.context_management.interview_context import InterviewContext
 from agents.context_management.session_contexts.section_context import SectionContextBase, SectionID
 
-def make_sample_context(context_id="test-id"):
+def make_sample_context(context_id=1):
   section = SectionContextBase(section_id=SectionID.S101, section_status="pending", next_question="Q1", facts=[])
   ctx = InterviewContext(context_id=context_id, context_name="Test", section_id=SectionID.S101, sections=[section], conversation_history=[])
   return ctx
