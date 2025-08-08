@@ -23,3 +23,8 @@ sdk_examples/
 
 # Logs
 logs/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
