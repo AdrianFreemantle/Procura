@@ -49,7 +49,7 @@ def create_interface() -> gr.Blocks:
         with gr.Sidebar():
             new_chat_btn = gr.Button("New Chat", variant="secondary")
             chat_selector = gr.Radio(
-                choices=["Current Chat", "Previous Chat 1", "Previous Chat 2", "Previous Chat 3"],
+                choices=[],
                 label="Chat History"
             )
 
@@ -84,6 +84,27 @@ def create_interface() -> gr.Blocks:
                 send_btn = gr.Button("💬 Send Message")
                 draft_btn = gr.Button("📄 Draft Document", variant="secondary")
 
+        # --- Helpers & State ---
+        def _context_label(ctx: dict) -> str:
+            # Example: "3 • 2025-08-08 16:10:12 (active)"
+            return f"{ctx['context_id']} • {ctx['context_name']} ({ctx['context_status']})"
+
+        def _build_choices():
+            ctxs = chat_manager.list_contexts()
+            current_id = chat_manager.current_context_id
+            labels = []
+            mapping = {}
+            selected = None
+            for c in ctxs:
+                label = _context_label(c)
+                labels.append(label)
+                mapping[label] = c["context_id"]
+                if current_id is not None and c["context_id"] == current_id:
+                    selected = label
+            return labels, selected, mapping
+
+        mapping_state = gr.State({})
+
         # --- Events ---    
 
         def send_message(message, chat_history):
@@ -99,6 +120,56 @@ def create_interface() -> gr.Blocks:
             return "", user_input, chat_history
 
         message_state = gr.State()
+
+        # Initialize sidebar with context list on app load
+        def init_sidebar():
+            labels, selected, mapping = _build_choices()
+            # Do not auto-select or load any previous chat on load.
+            # Show a blank new chat until the user selects or creates one.
+            return gr.update(choices=labels, value=None), mapping, []
+
+        demo.load(
+            fn=init_sidebar,
+            inputs=[],
+            outputs=[chat_selector, mapping_state, chatbot]
+        )
+
+        # New Chat: create and persist, then refresh list and clear chat UI
+        def on_new_chat(mapping):
+            ctx = chat_manager.create_new_context()
+            chat_manager.save_context(ctx)  # assign ID, remains 'empty' until first message
+            labels, selected, new_map = _build_choices()
+            # Select the newly created (current) chat in the sidebar
+            return gr.update(choices=labels, value=selected), new_map, []
+
+        new_chat_btn.click(
+            fn=on_new_chat,
+            inputs=[mapping_state],
+            outputs=[chat_selector, mapping_state, chatbot]
+        )
+
+        # Selecting a chat: switch and load its conversation history
+        def on_select_chat(selected_label, mapping):
+            if not selected_label:
+                return []
+            ctx_id = mapping.get(selected_label)
+            if ctx_id is None:
+                # Mapping might be stale; rebuild once
+                labels, selected, new_map = _build_choices()
+                if selected_label in new_map:
+                    ctx_id = new_map[selected_label]
+                else:
+                    return []
+            ctx = chat_manager.switch_context(ctx_id)
+            if ctx is None:
+                return []
+            return ctx.conversation_history
+
+        chat_selector.change(
+            fn=on_select_chat,
+            inputs=[chat_selector, mapping_state],
+            outputs=[chatbot]
+        )
 
         send_btn.click(
             fn=prep_message,

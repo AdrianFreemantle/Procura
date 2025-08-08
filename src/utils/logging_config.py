@@ -2,6 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
+import re
 
 try:
   from dotenv import load_dotenv  # type: ignore
@@ -15,7 +16,7 @@ def init_logging() -> None:
   Reads configuration from environment variables (optionally via .env):
   - LOG_LEVEL (default: INFO)
   - LOG_FILE (default: logs/procura.log)
-  - LOG_MAX_BYTES (default: 1048576)
+  - LOG_MAX_BYTES (default: 1048576) — supports suffixes KB, MB, GB (1024-based), e.g. "10MB"
   - LOG_BACKUP_COUNT (default: 5)
   - LOG_FORMAT (default: "%(asctime)s %(levelname)s %(name)s - %(message)s")
   - LOG_DATE_FORMAT (default: "%Y-%m-%d %H:%M:%S")
@@ -34,7 +35,33 @@ def init_logging() -> None:
 
   level_name = os.getenv("LOG_LEVEL", "INFO").upper()
   log_file = os.getenv("LOG_FILE", "logs/procura.log")
-  max_bytes = int(os.getenv("LOG_MAX_BYTES", "1048576"))
+  max_bytes_str = os.getenv("LOG_MAX_BYTES", "1048576")
+  def _parse_size_bytes(val: str) -> int:
+    s = val.strip().lower()
+    # plain integer bytes
+    if s.isdigit():
+      return int(s)
+    # pattern with optional decimal and unit suffix
+    m = re.match(r"^([0-9]*\.?[0-9]+)\s*([kmg]b?|b)$", s)
+    if not m:
+      raise ValueError(f"Invalid LOG_MAX_BYTES value: {val}")
+    num = float(m.group(1))
+    unit = m.group(2)
+    if unit in ("b",):
+      mult = 1
+    elif unit in ("k", "kb"):
+      mult = 1024
+    elif unit in ("m", "mb"):
+      mult = 1024 ** 2
+    elif unit in ("g", "gb"):
+      mult = 1024 ** 3
+    else:
+      mult = 1
+    return int(num * mult)
+  try:
+    max_bytes = _parse_size_bytes(max_bytes_str)
+  except Exception:
+    max_bytes = 1048576
   backup_count = int(os.getenv("LOG_BACKUP_COUNT", "5"))
   fmt = os.getenv("LOG_FORMAT", "%(asctime)s %(levelname)s %(name)s - %(message)s")
   datefmt = os.getenv("LOG_DATE_FORMAT", "%Y-%m-%d %H:%M:%S")
