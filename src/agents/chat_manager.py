@@ -1,4 +1,4 @@
-import rich
+import logging
 from agents.facts_agent import FactsAgent
 from agents.interview_agent import InterviewerAgent
 from agents.context_management.interview_context import InterviewContext
@@ -6,6 +6,8 @@ from agents.context_management.session_contexts.contexts import CONTEXTS
 from agents.context_management.persistence.sqlite_store import SqlLiteContextStore
 import time
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 class ChatManager:
     def __init__(self):
@@ -16,6 +18,7 @@ class ChatManager:
         self.persisted_context.sections = CONTEXTS
         self.context_store = SqlLiteContextStore()
         self.current_context_id: int | None = None
+        logger.info("ChatManager initialized")
         
     def create_new_context(self, name: str | None = None) -> InterviewContext:
         """Create a new InterviewContext with status 'empty'.
@@ -28,6 +31,7 @@ class ChatManager:
             sections=CONTEXTS
         )
         self.persisted_context = context
+        logger.info("Created new context with name '%s'", context.context_name)
         return context
     
     def load_context(self, context_id: int) -> InterviewContext | None:
@@ -36,6 +40,9 @@ class ChatManager:
         if context is not None:
             self.persisted_context = context
             self.current_context_id = context.context_id
+            logger.info("Loaded context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)
+        else:
+            logger.warning("Context id=%s not found when attempting to load", context_id)
         return context
 
     def save_context(self, context: InterviewContext) -> int:
@@ -45,6 +52,7 @@ class ChatManager:
         context_id = self.context_store.store_context(context)
         self.persisted_context = context
         self.current_context_id = context_id
+        logger.info("Saved context id=%s name='%s' status=%s", context_id, context.context_name, context.context_status)
         return context_id
         
     def _msg(self,role: str, content: str) -> dict:
@@ -59,14 +67,14 @@ class ChatManager:
         # First user interaction activates the context
         if context.context_status == "empty":
             context.context_status = "active"
+            logger.info("Context id=%s promoted to 'active'", context.context_id)
 
         context.conversation_append("user", user_input)
 
         start_time = time.perf_counter()
         new_context = self.facts_agent.evaluate(context)            
-        rich.print("FACTS AGENT OUTPUT: " + new_context.model_dump_json(indent=1))     
         end_time = time.perf_counter()   
-        print(f"Facts call took {end_time - start_time:.2f} seconds")
+        logger.info("Facts evaluation took %.2f seconds", (end_time - start_time))
 
         context.update_section(new_context)        
         if new_context.section_status == "complete":
@@ -75,7 +83,7 @@ class ChatManager:
         start_time = time.perf_counter()
         yield from self.interviewer_agent.interview(context)               
         end_time = time.perf_counter()
-        print(f"Interview call took {end_time - start_time:.2f} seconds")
+        logger.info("Interview evaluation took %.2f seconds", (end_time - start_time))
 
         # Persist updates and ensure an integer ID is assigned
         self.save_context(context)
@@ -83,8 +91,12 @@ class ChatManager:
     def switch_context(self, context_id: int) -> InterviewContext | None:
         """Switch the active conversation to the specified context ID."""
         ctx = self.load_context(context_id)
+        if ctx is not None:
+            logger.info("Switched to context id=%s", context_id)
         return ctx
 
     def list_contexts(self):
         """List contexts for UI selection, filtering out 'empty' except the current context."""
-        return self.context_store.list_contexts(self.current_context_id if self.current_context_id is not None else None)
+        current_id = self.current_context_id if self.current_context_id is not None else None
+        logger.info("Listing contexts (current_context_id=%s)", current_id)
+        return self.context_store.list_contexts(current_id)

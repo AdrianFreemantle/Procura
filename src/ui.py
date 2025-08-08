@@ -2,6 +2,10 @@ import gradio as gr
 
 from agents.chat_manager import ChatManager
 #from agents.markdown_agent import MarkdownAgent
+from utils.logging_config import init_logging
+
+# Initialize logging as early as possible
+init_logging()
 
 chat_manager = ChatManager()
 #markdown_agent = MarkdownAgent()

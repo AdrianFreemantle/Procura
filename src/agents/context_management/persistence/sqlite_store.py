@@ -3,6 +3,9 @@ import json
 from datetime import datetime
 from typing import List, Dict, Optional, Any
 from agents.context_management.interview_context import InterviewContext
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SqlLiteContextStore:
   def __init__(self, db_path: str = ":memory:"):
@@ -13,6 +16,7 @@ class SqlLiteContextStore:
       self._ensure_table(self._conn)
     else:
       self._ensure_table()
+    logger.info("SqlLiteContextStore initialized (db_path=%s, in_memory=%s)", db_path, db_path == ":memory:")
 
   def _get_connection(self):
     if self._conn:
@@ -34,6 +38,7 @@ class SqlLiteContextStore:
         """
       )
       conn.commit()
+      logger.info("Ensured 'contexts' table exists")
     finally:
       if not self._conn:
         conn.close()
@@ -41,6 +46,7 @@ class SqlLiteContextStore:
   def get_context(self, context_id: int) -> InterviewContext | None:
     conn = self._get_connection()
     try:
+      logger.info("Fetching context id=%s", context_id)
       cur = conn.execute(
         "SELECT context_json FROM contexts WHERE context_id = ?",
         (context_id,)
@@ -48,7 +54,10 @@ class SqlLiteContextStore:
       row = cur.fetchone()
       if row:
         data = json.loads(row[0])
-        return InterviewContext.model_validate(data)
+        context = InterviewContext.model_validate(data)
+        logger.info("Fetched context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)
+        return context
+      logger.warning("Context id=%s not found", context_id)
       return None
     finally:
       if not self._conn:
@@ -62,6 +71,7 @@ class SqlLiteContextStore:
       
       if context.context_id is None:
         # Insert new context
+        logger.info("Inserting new context name='%s' status=%s", context.context_name, context.context_status)
         cur = conn.execute(
           "INSERT INTO contexts (context_name, context_status, context_json, last_updated) VALUES (?, ?, ?, ?)",
           (context.context_name, context.context_status, "", now)
@@ -75,8 +85,10 @@ class SqlLiteContextStore:
           "UPDATE contexts SET context_json = ? WHERE context_id = ?",
           (context_json, context_id)
         )
+        logger.info("Inserted context id=%s", context_id)
       else:
         # Update existing context - serialize with existing ID
+        logger.info("Updating context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)
         context_json = context.model_dump_json()
         conn.execute(
           "UPDATE contexts SET context_name = ?, context_status = ?, context_json = ?, last_updated = ? WHERE context_id = ?",
@@ -93,6 +105,7 @@ class SqlLiteContextStore:
   def remove_context(self, context_id: int):
     conn = self._get_connection()
     try:
+      logger.info("Removing context id=%s", context_id)
       conn.execute(
         "DELETE FROM contexts WHERE context_id = ?",
         (context_id,)
@@ -107,6 +120,7 @@ class SqlLiteContextStore:
     Filters out 'empty' contexts except for the current_context_id (union approach)."""
     conn = self._get_connection()
     try:
+      logger.info("Listing contexts (current_context_id=%s)", current_context_id)
       if current_context_id is not None:
         # Union approach: get active/archived contexts + current context (even if empty)
         cur = conn.execute(
@@ -130,6 +144,7 @@ class SqlLiteContextStore:
         )
       
       rows = cur.fetchall()
+      logger.info("Listed %d contexts", len(rows))
       return [
         {
           "context_id": row[0],
@@ -147,3 +162,4 @@ class SqlLiteContextStore:
     if self._conn:
       self._conn.close()
       self._conn = None
+      logger.info("SqlLiteContextStore connection closed")
