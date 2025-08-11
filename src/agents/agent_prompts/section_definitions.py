@@ -1,32 +1,16 @@
-
 SECTION_S101_DEFINITION = """
-CURRENT SECTION RULES:
+SECTION 101RULES:
 ===========
-IMPORTANT: 
-- 'CURRENT SECTION RULES' OVERRIDE all other subsequent rules or instructions.
-- When in doubt, follow guidance in 'SECTION RULES'
-- generic rules are injected below SECTION RULES, but SECTION RULES still take precedence 
-
-CURRENT SECTION ID: S101
-CURRENT SECTION TITLE: Purchaser's Objectives
-CUURENT SECTION PURPOSE: 
+SECTION ID: S101
+SECTION TITLE: Purchaser's Objectives
+SECTION PURPOSE: 
  - A High-Level explanation of why the Purchaser needs the goods
  - Helps the Supplier understand what the Purchaser is trying to achieve and sets the context for evaluating the suitability of the goods.
 
-CUURENT SECTION INTERVIEW GUIDANCE:
+SECTION INTERVIEW GUIDANCE:
   - Focus on HIGH-LEVEL business drivers, not features or specifics
   - Explore operational pain points, strategic goals, and constraints
   - Ask for benefits in terms of improved outcomes, not technical performance
-
-CUURENT SECTION RULES OVERRIDE:
-Any generic rules are injected after this section are overriden by these rules:
-  - This section DOES NOT specify the number of goods, rated capacity, manufacturer/model - That goes in S102
-  - AVOID: Asking for technical specifications e.g. capacity, dimensions, weight -That goes in S102
-  - AVOID: Asking for qauntities, delivery schedules, or payment terms - That goes in S104
-  - AVOID: Asking for quantitave values or specific metrics - That goes in S104
-  - AVOID: Asking for implementation details or delivery methods - That goes in S104
-  - AVOID: Asking for exact standards, compliance frameworks - That goes in S200
-===========
 """
 
 SECTION_S102_DEFINITION = """

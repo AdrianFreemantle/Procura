@@ -1,34 +1,47 @@
-from pydantic import BaseModel, Field
-from typing import List, Literal
+from enum import Enum
+from typing import Final, List, Optional
 from ..enums import SectionID
+from pydantic import BaseModel, Field
 
 # -----------------------------
-# FACT MODEL
+# Enums (single source of truth)
 # -----------------------------
+class FactStatus(str, Enum):
+    pending = "pending"
+    partial = "partial"
+    answered = "answered"
+    not_applicable = "not_applicable"
 
-class Fact(BaseModel):
-    value: str = Field(default="", description="Captured fact from the Purchaser")
-    description: str = Field(default="", description="What this fact represents or explains")
-    question: str = Field(default="", description="Question to ask the Purchaser to obtain this fact")
+class SectionStatus(str, Enum):
+    pending = "pending"
+    in_progress = "in_progress"
+    complete = "complete"
+
+class Severity(str, Enum):
+    ok = "ok"
+    needs_more_detail = "needs_more_detail"
 
 # -----------------------------
-# WRAPPER FOR FACT NAME
+# Fact primitives
 # -----------------------------
-
 class NamedFact(BaseModel):
-    name: str = Field(default="", description="Name/key of the fact (used for lookup)")
-    data: Fact = Field(default_factory=Fact, description="Fact metadata and value")
+    name: str = Field(default="", description="Fact key")
+    answers: List[str] = Field(default_factory=list, description="Captured answers")
+    description: str = Field(default="", description="What this fact represents")
+    question: str = Field(default="", description="How to ask for this fact from the user")    
+    status: FactStatus = Field(default=FactStatus.pending, description="Capture state")
 
 # -----------------------------
-# SECTION CONTEXT MODEL
+# Section context (generic + S101 factory)
 # -----------------------------
-
 class SectionContextBase(BaseModel):
-    section_id: SectionID = Field(default=SectionID.S101, description="Which contract section this context represents")
-    section_status: Literal["pending", "in_progress", "complete"] = Field(default="pending", description="Whether all facts are complete")
-    next_question: str = Field(default="", description="Next interview question to ask")
-    facts: List[NamedFact] = Field(default_factory=list, description="List of facts to capture for this section") 
+    section_id: SectionID = Field(default=SectionID.S101)
+    section_title: str = Field(default="")
+    section_purpose: str = Field(default="")
+    interview_guidance: str = Field(default="")
+    section_status: SectionStatus = Field(default=SectionStatus.pending)
+    facts: List[NamedFact] = Field(default_factory=list)    
+    message_to_user: Optional[str] = Field(default="", description="Next question to ask")
 
 class GenericSectionContext(SectionContextBase):
     pass
-

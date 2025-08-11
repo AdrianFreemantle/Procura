@@ -1,4 +1,4 @@
-from .base_prompts import INTERVIEWER_PROMPT, FACT_EVALUATOR_PROMPT
+from .base_prompts import INTERVIEWER_PROMPT
 from .section_definitions import (
     SECTION_S101_DEFINITION,
     SECTION_S102_DEFINITION,

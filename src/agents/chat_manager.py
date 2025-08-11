@@ -1,17 +1,16 @@
 import logging
-from agents.facts_agent import FactsAgent
 from agents.interview_agent import InterviewerAgent
 from agents.context_management.interview_context import InterviewContext
 from agents.context_management.session_contexts.contexts import CONTEXTS
 from agents.context_management.persistence.sqlite_store import SqlLiteContextStore
 import time
+import rich
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 class ChatManager:
-    def __init__(self):
-        self.facts_agent = FactsAgent()                
+    def __init__(self):    
         self.interviewer_agent = InterviewerAgent()
         # Initialize an in-memory working context; persisted on first save
         self.persisted_context = InterviewContext()
@@ -72,18 +71,17 @@ class ChatManager:
         context.conversation_append("user", user_input)
 
         start_time = time.perf_counter()
-        new_context = self.facts_agent.evaluate(context)            
+        new_context = self.interviewer_agent.evaluate(context)            
         end_time = time.perf_counter()   
         logger.info("Facts evaluation took %.2f seconds", (end_time - start_time))
-
+        
         context.update_section(new_context)        
         if new_context.section_status == "complete":
-            context.advance_to_next_section()                     
+            context.advance_to_next_section()                          
 
-        start_time = time.perf_counter()
-        yield from self.interviewer_agent.interview(context)               
-        end_time = time.perf_counter()
-        logger.info("Interview evaluation took %.2f seconds", (end_time - start_time))
+        rich.print(new_context)
+        context.conversation_append("assistant", new_context.message_to_user)
+        yield context.get_conversation()    
 
         # Persist updates and ensure an integer ID is assigned
         self.save_context(context)
