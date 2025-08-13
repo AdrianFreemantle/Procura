@@ -4,6 +4,7 @@ from agents.document_drafting.drafter_agent import DrafterAgent
 
 from agents.context_management.interview_context import InterviewContext
 from agents.context_management.session_contexts.contexts import *
+from agents.context_management.session_contexts.section_context import SectionStatus
 from agents.context_management.persistence.sqlite_store import SqlLiteContextStore
 
 import time
@@ -60,11 +61,24 @@ class ChatManager:
     def _msg(self,role: str, content: str) -> dict:
         return {"role": role, "content": content}    
 
+    def get_greeting_message(self) -> str:
+        """Generate a greeting message for new chats."""
+        return """👋 Welcome to Procura - Your NEC4 SSC Scope Document Assistant!
+
+What specific operational issue, deficiency, or risk tied to the Purchaser's operations is prompting this procurement?        
+        """
+
     def chat(self, user_input: str): 
         # Ensure there is a working context
         context = self.persisted_context
         if context is None:
             context = self.create_new_context()
+
+        if(user_input.startswith("/")):
+            if(user_input.strip() == "/context"):
+                section = context.get_current_section()
+                yield context.get_conversation() + [self._msg("user", user_input), self._msg("assistant", section.model_dump_json(indent=1))]
+                return
 
         # First user interaction activates the context
         if context.context_status == "empty":
@@ -78,15 +92,16 @@ class ChatManager:
         new_context = self.interviewer_agent.evaluate(context)    
         logger.info("New context: %s", new_context.model_dump_json())        
         end_time = time.perf_counter()   
-        logger.debug("Facts evaluation took %.2f seconds", (end_time - start_time))        
+        logger.debug("Facts evaluation took %.2f seconds", (end_time - start_time))          
 
         context.update_section(new_context)        
 
         rich.print(new_context)
+        rich.print("Facts evaluation seconds", (end_time - start_time))  
         context.conversation_append("assistant", new_context.message_to_user)
         yield context.get_conversation()            
 
-        if new_context.section_status == "complete":            
+        if new_context.section_status == SectionStatus.complete:            
             context.advance_to_next_section()                          
         
         # Persist updates and ensure an integer ID is assigned

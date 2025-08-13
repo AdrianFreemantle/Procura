@@ -9,6 +9,9 @@ class FactStatus(str, Enum):
     partial = "partial"
     answered = "answered"
     not_applicable = "not_applicable"
+    
+    def __str__(self):
+        return f"{self.value}"
 
 class SectionStatus(str, Enum):
     pending = "pending"
@@ -19,14 +22,16 @@ class Severity(str, Enum):
     ok = "ok"
     needs_more_detail = "needs_more_detail"
 
+    def __str__(self):
+        return f"{self.value}"
+
 # -----------------------------
 # Fact primitives
 # -----------------------------
-class NamedFact(BaseModel):
-    name: str = Field(default="", description="Fact key")
-    answers: List[str] = Field(default_factory=list, description="Captured answers")
-    description: str = Field(default="", description="What this fact represents")
+class Fact(BaseModel):
+    name: str = Field(default="", description="Fact key")        
     question: str = Field(default="", description="How to ask for this fact from the user")    
+    answers: List[str] = Field(default_factory=list, description="Captured answers")
     status: FactStatus = Field(default=FactStatus.pending, description="Capture state")
 
 # -----------------------------
@@ -39,7 +44,7 @@ class SectionContextBase(BaseModel):
     message_to_user: Optional[str] = Field(default="", description="Next question to ask")
 
 class FactsSectionContext(SectionContextBase):
-    facts: List[NamedFact] = Field(default_factory=list)    
+    facts: List[Fact] = Field(default_factory=list)    
     pass
 
 class MainContext(BaseModel):
@@ -51,28 +56,27 @@ class MainContext(BaseModel):
 # Typed structures for S102
 # -----------------------------
 class GoodsDescription(BaseModel):
-    facts: List[NamedFact] = Field(default=[
-        NamedFact(
+    facts: List[Fact] = Field(default=[
+        Fact(
             name="goods_common_name",
-            description="The name or designation the Purchaser uses for the goods, used consistently in the contract and related documents.",
-            question="What are the goods called?",
+            question="What name or designation does the Purchaser use for the goods in contracts and related documents?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
-            name="core_characteristics",
-            description="The factual attributes that identify the goods, including type, model, size or dimensions, capacity, and, where relevant, configuration or variant codes.",
-            question="What type, model, size, or capacity do the goods have?",
+        Fact(
+            name="goods_description",
+            question="How would the purchaser describe the goods?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="intended_use",
-            description="High-level operational purpose or function of the goods within the Purchaser's operation.",
-            question="What are the goods used for in the Purchaser's operation?",
+            question="What is the high-level operational purpose or function of the goods within the Purchaser's operations?",
             status=FactStatus.pending,
             answers=[]
-        )])
+        )
+    ])
+
 
 class SectionS102Context(SectionContextBase):
     section_id: SectionID = Field(default=SectionID.S102)

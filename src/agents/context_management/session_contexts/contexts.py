@@ -2,45 +2,41 @@ from typing import List, Type, Dict
 from .section_context import *
 
 S101_CONTEXT: SectionContextBase = FactsSectionContext(
-    section_id=SectionID.S101,    
+    section_id=SectionID.S101,
     facts=[
-        NamedFact(
+        Fact(
             name="business_need_or_driver",
-            description="Operational problem, deficiency, or risk prompting this procurement, tied to Purchaser operations.",
-            question="What specific operational issue, deficiency, or risk is prompting this procurement, in the context of your operations?",            
+            question="What specific operational issue, deficiency, or risk tied to the Purchaser's operations is prompting this procurement?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="strategic_goals",
-            description="The longer-term business or strategic objectives the Purchaser intends to achieve through this procurement. Examples include regulatory compliance, expansion into new markets, or achieving specific performance targets.",
-            question="What longer-term business or strategic goals is the Purchaser aiming to achieve with this procurement?",
+            question="What longer-term business or strategic objectives — such as compliance, market expansion, or performance targets — is the Purchaser aiming to achieve through this procurement?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="intended_operational_outcomes",
-            description="Tangible improvements the Purchaser expects to realise after successful delivery. These must be framed as measurable operational results (e.g. reduced downtime, lower maintenance costs, improved throughput).",
-            question="What specific outcomes or improvements does the Purchaser expect to achieve through this procurement?",
+            question="What tangible, measurable improvements in operations does the Purchaser expect after successful delivery (e.g. reduced downtime, improved throughput)?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="existing_operational_issues",
-            description="Any known defects, inefficiencies, or operational risks in current systems or processes that this procurement is intended to fix or mitigate.",
-            question="What known issues or shortcomings with current operations or equipment is this procurement intended to address?",
+            question="What known defects, inefficiencies, or operational risks in current systems or processes is this procurement meant to fix or mitigate?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="assets_being_replaced_or_upgraded",
-            description="Any existing assets (e.g. equipment, machinery, tools, infrastructure) that will be replaced, upgraded, or decommissioned as a direct result of this procurement.",
-            question="Are there specific assets, systems, or equipment that this procurement will replace or upgrade?",
+            question="Which existing assets, systems, or equipment will be replaced, upgraded, or decommissioned as a direct result of this procurement?",
             status=FactStatus.pending,
-            answers=[]        
+            answers=[]
         )
     ]
 )
+
 
 S102_CONTEXT: SectionContextBase = SectionS102Context(
     section_id=SectionID.S102,    
@@ -51,10 +47,9 @@ S102_CONTEXT: SectionContextBase = SectionS102Context(
 S103_CONTEXT: SectionContextBase = SectionS103Context(
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="drawings_required",
-            description="Whether drawings are required to define or illustrate the goods. If not required, provide a short reason.",
-            question="Are drawings required to define or illustrate the goods? If not, briefly state why.",
+            question="Are drawings required to define or illustrate the goods, and if not, what is the short reason?",
             status=FactStatus.pending,
             answers=[]
         )
@@ -62,35 +57,31 @@ S103_CONTEXT: SectionContextBase = SectionS103Context(
 )
 
 S104_CONTEXT: SectionContextBase = FactsSectionContext(
-    section_id=SectionID.S104,  
-    section_name="Tests and Inspections",  
+    section_id=SectionID.S104,
+    section_name="Tests and Inspections",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="tests_required",
-            description="Whether any tests or inspections are required before the goods are accepted. If not required, provide a brief reason.",
-            question="Are any tests or inspections required before the goods are accepted? If not, briefly state why.",
+            question="Are any tests or inspections required before the goods can be accepted by the Purchaser? If not, what is the reason they are not necessary?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="test_scope_and_methods",
-            description="Concise list of required tests or inspections, including the applicable standard or test method for each.",
-            question="What tests or inspections must be carried out, and which standards or test methods apply?",
+            question="What specific tests or inspections must be carried out, and which standards or test methods apply to each one?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="responsibility_location_timing",
-            description="Who performs the tests, who (if anyone) must witness or sign off, and when and where they take place (e.g., factory, site, pre-delivery).",
-            question="Who will carry out the tests, who must witness or sign off (if applicable), and when and where will they take place?",
+            question="Who will perform the required tests, who (if anyone) must witness or sign them off, and when and where will these take place — for example, at the factory, on-site, or before delivery?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="acceptance_criteria_and_documents",
-            description="Measurable pass/fail criteria for each test and the required records or certificates for acceptance.",
-            question="What are the pass/fail criteria for these tests, and what documents or certificates are required for acceptance?",
+            question="What measurable pass/fail criteria apply to the tests, and what records or certificates must be provided for the goods to be accepted?",
             status=FactStatus.pending,
             answers=[]
         )
@@ -102,31 +93,27 @@ S105_CONTEXT: SectionContextBase = FactsSectionContext(
     section_name="Samples",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="samples_required",
-            description="Whether samples of the goods are required before manufacturing or delivery. If not required, give a brief reason.",
-            question="Does the Purchaser require samples of any goods before manufacturing or delivery? If not, briefly state why.",
+            question="Are samples of the goods required before manufacturing or delivery? If not, what is the reason they are not necessary?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="sample_type_and_quantity",
-            description="What samples must be submitted (e.g., material swatch, component sample, mock-up, prototype) and the quantity or size for each. Indicate what attribute the sample represents (e.g., colour, finish, material, construction).",
-            question="What type of samples must be submitted (for example, material swatch, component sample, mock-up), and how many of each?",
+            question="What type of samples must be provided — such as material swatch, component sample, mock-up, or prototype — and what quantity or size is needed for each? What specific attribute does each sample represent (e.g. colour, finish, material)?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="submission_requirements",
-            description="Any rules for packaging, labelling, or delivery of samples, including where and by when they must be submitted.",
-            question="Are there any rules about how samples must be packaged, labelled, or delivered?",
+            question="What are the requirements for how samples must be packaged, labelled, or delivered — including where and by when they must be submitted?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="acceptance_procedure",
-            description="How acceptance of samples will be decided, who will review or sign off, any required witnesses, and what record will confirm acceptance or rejection.",
-            question="How will acceptance be decided, who will review, and what record will confirm acceptance or rejection?",
+            question="How will the Purchaser decide whether to accept or reject the samples, who will review or sign off, are witnesses required, and what record will confirm the outcome?",
             status=FactStatus.pending,
             answers=[]
         )
@@ -138,31 +125,27 @@ S106_CONTEXT: SectionContextBase = FactsSectionContext(
     section_name="Management of Tests and Inspections",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="management_approach",
-            description="How tests and inspections will be organised and coordinated, including scheduling process, notice periods, and communication method. Do not include test content.",
-            question="How will the tests and inspections be managed (scheduling, notice periods, coordination and communication)?",
+            question="How will the tests and inspections be organised and coordinated — including how they are scheduled, what notice periods apply, and how communication will be handled? (Do not describe the test content.)",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="attendance_and_approvals",
-            description="Roles required to attend or witness tests/inspections and the role responsible for approving results.",
-            question="Who must attend or witness the tests or inspections, and who approves the results?",
+            question="Which roles are required to attend or witness the tests or inspections, and which role is responsible for approving the results?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="access_and_facilities",
-            description="Arrangements for access to the site or factory, including any inductions, permits, or facilities/equipment to be made available.",
-            question="How will access to the site or factory be arranged, and are any inductions, permits, or facilities required?",
+            question="What arrangements are required for access to the site or factory — such as inductions, permits, or the availability of facilities and equipment?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="records_and_submissions",
-            description="Records, certificates, or reports to be submitted after testing, including required format and method/location for submission.",
-            question="What records or certificates must be submitted afterwards, and in what format or where should they be submitted?",
+            question="What records, certificates, or reports must be submitted after testing — and what format, submission method, or location is required?",
             status=FactStatus.pending,
             answers=[]
         )
@@ -174,31 +157,53 @@ S107_CONTEXT: SectionContextBase = FactsSectionContext(
     section_name="Correcting Defects",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="defect_reporting_process",
-            description="How a defect is reported when found during inspection, testing, or delivery: who is notified, how it is reported, and any timeframes.",
-            question="What process must be followed to notify a defect found during inspection, testing, or delivery?",
+            question="When a defect is found during inspection, testing, or delivery, how must it be reported — who is notified, how is it reported, and are there any required timeframes?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="correction_authority_and_plan",
-            description="Who authorises repair or replacement and what must be agreed before correction starts (for example, method statement and timing).",
-            question="Who authorises repair or replacement, and what must be agreed before correction starts?",
+            question="Who authorises the repair or replacement of a defect, and what must be agreed in advance (e.g., method statement, timing) before work starts?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="access_and_coordination_for_rework",
-            description="How access will be arranged for repair or replacement, who coordinates logistics, and any required permits or site rules.",
-            question="Who manages access and coordination for rework, and what arrangements or permits are required?",
+            question="How will access be arranged for repair or replacement, who coordinates the logistics, and what permits or site rules apply?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="reinspection_and_acceptance",
-            description="How corrected goods will be re-inspected or verified and what records or certificates are required for acceptance.",
-            question="How will repairs or replacements be re-inspected or verified before final acceptance, and what records are required?",
+            question="After a defect is corrected, how will the goods be re-inspected or verified, and what records or certificates are needed for acceptance?",
+            status=FactStatus.pending,
+            answers=[]
+        )
+    ]
+)
+
+S109_CONTEXT: SectionContextBase = FactsSectionContext(
+    section_id=SectionID.S109,
+    section_name="Method Statements",
+    section_status=SectionStatus.pending,
+    facts=[
+        Fact(
+            name="activities_requiring_method_statements",
+            question="Which specific activities require method statements or risk assessments — for example, lifting, transport, installation, working at height, or confined space work?",
+            status=FactStatus.pending,
+            answers=[]
+        ),
+        Fact(
+            name="submission_timing_and_approval",
+            question="When must these documents be submitted before the activity begins, and who is responsible for reviewing and approving them?",
+            status=FactStatus.pending,
+            answers=[]
+        ),
+        Fact(
+            name="formats_templates_and_platforms",
+            question="Are there required formats, templates, or submission platforms that the Supplier must use for method statements or risk assessments?",
             status=FactStatus.pending,
             answers=[]
         )
@@ -211,89 +216,54 @@ S108_CONTEXT: SectionContextBase = FactsSectionContext(
     section_name="Health and Safety Requirements",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="hse_procedures_and_site_rules",
-            description="Purchaser-specific H&S procedures or site rules the Supplier must follow (for example, site entry rules, PPE standards, inductions, working at height, hot work, confined spaces). Provide titles or references to the relevant documents.",
-            question="Are there Purchaser-specific health and safety procedures or site rules the Supplier must follow? State their titles or references.",
+            question="Are there Purchaser-specific health and safety procedures or site rules the Supplier must follow — such as site entry requirements, PPE standards, inductions, working at height, hot work, or confined space rules? Provide the titles or references to the relevant documents.",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="training_permits_and_documents",
-            description="Training, permits, or safety documentation required before the Supplier may work (for example, valid inductions, hot work permits, confined space permits, contractor HSE plan).",
-            question="Does the Purchaser require specific training, permits, or safety documentation before the Supplier may work? Specify what is required.",
+            question="What training, permits, or safety documentation must the Supplier have before starting work — for example, valid inductions, hot work permits, confined space permits, or an approved contractor HSE plan?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="incident_reporting_requirements",
-            description="How safety incidents and near misses must be reported, including who to notify, required timeframes, and any form or system to be used.",
-            question="How must safety incidents or near misses be reported? Include who to notify and the required timeframe.",
+            question="How must safety incidents or near misses be reported — including who must be notified, the required timeframes, and any forms or systems that must be used?",
             status=FactStatus.pending,
             answers=[]
         )
     ]
 )
 
-S109_CONTEXT: SectionContextBase = FactsSectionContext(
-    section_id=SectionID.S109,
-    section_name="Method Statements",
-    section_status=SectionStatus.pending,
-    facts=[
-        NamedFact(
-            name="activities_requiring_method_statements",
-            description="Specific activities that require method statements or risk assessments (for example, lifting, transport, installation, working at height, confined space).",
-            question="Are there specific activities that require method statements or risk assessments? If yes, list them.",
-            status=FactStatus.pending,
-            answers=[]
-        ),
-        NamedFact(
-            name="submission_timing_and_approval",
-            description="When the documents must be submitted before the activity, and who will review and approve them.",
-            question="When must the documents be submitted, and who approves them?",
-            status=FactStatus.pending,
-            answers=[]
-        ),
-        NamedFact(
-            name="formats_templates_and_platforms",
-            description="Any required formats, templates, or submission platforms for method statements or risk assessments.",
-            question="Are there any formats, templates, or submission platforms the Supplier must use?",
-            status=FactStatus.pending,
-            answers=[]
-        )
-    ]
-)
 
 S110_CONTEXT: SectionContextBase = FactsSectionContext(
     section_id=SectionID.S110,
     section_name="Statutory Requirements",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="statutory_requirements_applicable",
-            description="Whether legal or regulatory requirements apply to the goods or their supply. If not applicable, provide a brief reason.",
-            question="Are there any legal or regulatory requirements the Supplier must comply with when providing the goods? If not, briefly state why.",
+            question="Are there any legal or regulatory requirements that apply to the goods or their supply? If not, briefly explain why none are applicable.",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="applicable_laws_and_regulations",
-            description="Titles and jurisdictions of laws or regulations that apply, including any industry-specific rules.",
-            question="Which laws or regulations apply to the goods or their supply? Include the jurisdiction and official titles.",
+            question="What laws, regulations, or industry-specific rules apply to the goods or their supply? Include the official titles and jurisdictions.",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="dutyholders_and_regulators",
-            description="Legal dutyholders or regulators the Supplier must work with or notify, and their roles.",
-            question="Are there legal dutyholders or regulators the Supplier must work with or notify? Who are they and what is their role?",
+            question="Which legal dutyholders or regulatory bodies must the Supplier engage with or notify, and what are their specific roles?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="approvals_permits_and_documents",
-            description="Required approvals, permits, or statutory certificates and when they must be obtained or submitted.",
-            question="What approvals, permits, or statutory certificates are required, and when must they be obtained or submitted?",
+            question="What approvals, permits, or statutory certificates are required, and at what point must they be obtained or submitted?",
             status=FactStatus.pending,
             answers=[]
         )
@@ -305,31 +275,27 @@ S111_CONTEXT: SectionContextBase = FactsSectionContext(
     section_name="Inspections of Safety Procedures",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="inspections_applicable",
-            description="Whether the Purchaser will carry out inspections or audits of the Supplier’s safety systems. If not applicable, give a brief reason.",
-            question="Will the Purchaser carry out inspections or audits of the Supplier’s safety systems? If not, briefly state why.",
+            question="Will the Purchaser carry out inspections or audits of the Supplier’s safety systems? If not, what is the reason they are not required?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="inspection_frequency_scope_and_format",
-            description="How often inspections will take place and the scope or format they will follow (for example, documentation checks, site visits, formal audits).",
-            question="How often will inspections take place, and what scope or format will they follow?",
+            question="How often will inspections or audits of the Supplier’s safety systems take place, and what scope or format will they follow — such as documentation checks, site visits, or formal audits?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="required_documents_for_review",
-            description="Safety documents the Supplier must submit for review (for example, HSE plan, procedures, incident logs, training records).",
-            question="What safety documents must the Supplier submit for review?",
+            question="Which safety-related documents must the Supplier submit for review — for example, the HSE plan, procedures, incident logs, or training records?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="purchaser_review_roles_and_reporting",
-            description="Who on the Purchaser’s team performs the review and how findings or actions will be communicated to the Supplier.",
-            question="Who on the Purchaser’s team performs the review, and how will findings be communicated?",
+            question="Who on the Purchaser’s team is responsible for reviewing the safety documentation, and how will the findings or required actions be communicated to the Supplier?",
             status=FactStatus.pending,
             answers=[]
         )
@@ -341,31 +307,27 @@ S112_CONTEXT: SectionContextBase = FactsSectionContext(
     section_name="Training Requirements",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="training_required",
-            description="Whether the Supplier must provide training to the Purchaser’s team. If not required, provide a brief reason.",
-            question="Must the Supplier provide training to the Purchaser’s team? If not, briefly state why.",
+            question="Is the Supplier required to provide training to the Purchaser’s team? If not, what is the reason training is not needed?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="training_scope_topics",
-            description="Topics or scope the training must cover, for example operation, safety, and maintenance.",
-            question="What topics must the training cover (for example, operation, safety, maintenance)?",
+            question="What topics or subject areas must the training cover — for example, operation, safety, and maintenance?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="delivery_method_timing_location_and_attendance",
-            description="How the training will be delivered and scheduled, including delivery method (on-site or remote), when it will occur, where it will take place, and how many people will attend. Indicate if training must be completed before Delivery or Handover.",
-            question="When and where should the training take place, how will it be delivered (on-site or remote), how many people will attend, and must it be completed before Delivery or Handover?",
+            question="How will the training be delivered (on-site or remote), when and where will it take place, how many people will attend, and must the training be completed before Delivery or Handover?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="trainer_qualifications_materials_and_certification",
-            description="Required qualifications of the trainer, training materials to be provided, and whether certification or sign-off is required after completion.",
-            question="What qualifications must the trainer have, what training materials must be provided, and is any certification or sign-off required?",
+            question="What qualifications must the trainer have, what training materials must be provided, and is any certification or sign-off required after the training is complete?",
             status=FactStatus.pending,
             answers=[]
         )
@@ -441,24 +403,21 @@ S202_CONTEXT: SectionContextBase = SectionS202Context(
     section_name="Deleterious and Hazardous Materials",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="prohibitions_applicable",
-            description="Whether any materials are prohibited or restricted for use in the goods. If none apply, this should explicitly state 'None'.",
-            question="Are there materials the Supplier must not use in the goods? If none apply, state 'None'.",
+            question="Are there any materials the Supplier is prohibited or restricted from using in the goods? If none apply, state 'None'.",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="scope_of_application",
-            description="Whether the prohibitions apply only to the goods’ primary materials or also to coatings, insulation, adhesives, lubricants, and packaging.",
-            question="Do these prohibitions apply only to the goods’ primary materials, or also to coatings, insulation, adhesives, lubricants, and packaging?",
+            question="Do these material prohibitions apply only to the goods’ primary materials, or do they also apply to coatings, insulation, adhesives, lubricants, and packaging?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="policy_or_standard_references",
-            description="Titles of any laws, regulations, or Purchaser policies that restrict materials (include edition/date where known).",
-            question="List any laws, regulations, or Purchaser policies that restrict materials (include titles and edition/date where known).",
+            question="What laws, regulations, or Purchaser policies restrict the use of materials? List their titles and edition or date where known.",
             status=FactStatus.pending,
             answers=[]
         )
@@ -470,58 +429,50 @@ S301_CONTEXT: SectionContextBase = FactsSectionContext(
     section_name="General Constraints",
     section_status=SectionStatus.pending,
     facts=[
-        NamedFact(
+        Fact(
             name="purchaser_rules_and_access",
-            description="Purchaser-specific rules or site access/zone limits the Supplier must follow.",
-            question="Are there Purchaser-specific rules or access or zone limits the Supplier must follow? If yes, list them.",
+            question="Are there Purchaser-specific rules the Supplier must follow, including site access restrictions or zone limits? If yes, list them.",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="working_hours_and_logistics",
-            description="Working-hour limits and traffic or delivery constraints that affect how the Supplier performs the work.",
-            question="Are there working-hour limits or traffic or delivery constraints (for example, no deliveries after 18:00)? If yes, list them.",
+            question="Are there working-hour restrictions or logistical constraints — such as delivery windows or traffic limitations — that affect how the Supplier performs the work?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="environmental_or_permit_constraints",
-            description="Constraints arising from environmental permits, ecological sensitivity, or similar approvals.",
-            question="Do environmental permits or ecological sensitivities impose constraints? If yes, summarise them.",
+            question="Are there constraints related to environmental permits, ecological sensitivity, or similar regulatory approvals that the Supplier must comply with?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="third_party_requirements",
-            description="Requirements imposed by other stakeholders or authorities that the Supplier must comply with.",
-            question="Must the Supplier comply with requirements from neighbours or authorities? If yes, who are they and what requirements apply?",
+            question="Are there requirements imposed by other stakeholders — such as neighbours, utilities, or authorities — that the Supplier must comply with? If yes, who are they and what requirements apply?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="legal_or_regulatory_constraints",
-            description="Legal or regulatory constraints that affect how the Supplier performs the work (for example, municipal by-laws, licence or permit conditions, road or utility permissions).",
-            question="Are there legal or regulatory constraints that affect how the Supplier performs the work (for example, municipal by-laws, licence or permit conditions, road or utility permissions)? If yes, list them.",
+            question="Are there legal or regulatory conditions — such as municipal by-laws, licence or permit requirements, or road and utility permissions — that affect how the Supplier performs the work?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="community_constraints",
-            description="Community-related constraints the Supplier must observe (for example, noise curfews, restricted routes, school hours, event blackouts, public notification requirements).",
-            question="Are there community-related constraints the Supplier must observe (for example, noise curfews, restricted routes, school hours, event blackouts, public notification requirements)? If yes, list them.",
+            question="Are there community-related constraints the Supplier must observe — for example, noise curfews, restricted routes, school hours, event blackouts, or public notification requirements?",
             status=FactStatus.pending,
             answers=[]
         ),
-        NamedFact(
+        Fact(
             name="other_constraints",
-            description="Other constraints the Supplier must observe (for example, noise curfews, restricted routes, school hours, event blackouts, public notification requirements).",
-            question="Are there other constraints the Supplier must observe (for example, noise curfews, restricted routes, school hours, event blackouts, public notification requirements)? If yes, list them.",
+            question="Are there any other constraints the Supplier must observe that do not fall under the previous categories? If yes, describe them.",
             status=FactStatus.pending,
             answers=[]
         )
     ]
 )
-
 
 
 SECTION_CONTEXT_TYPES: Dict[SectionID, Type[SectionContextBase]] = {
@@ -538,6 +489,8 @@ SECTION_CONTEXT_TYPES: Dict[SectionID, Type[SectionContextBase]] = {
     SectionID.S111: FactsSectionContext,
     SectionID.S112: FactsSectionContext,
     SectionID.S201: SectionS201Context,
+    SectionID.S202: SectionS202Context,
+    SectionID.S301: FactsSectionContext,
 }
 
 CONTEXTS: List[SectionContextBase] = [

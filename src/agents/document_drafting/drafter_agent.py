@@ -1,6 +1,7 @@
 from openai import OpenAI
 from agents.context_management import *
-from agents.agent_prompts import base_prompts
+from agents.agent_prompts import *
+from agents.agent_prompts.base_prompts import *
 from agents.context_management.interview_context import InterviewContext
 from agents.context_management.session_contexts.section_context import *
 from agents.document_drafting.style_guides.document_styles import DOCUMENTATION_STYLES
@@ -24,21 +25,15 @@ class DrafterAgent:
                     yield "\n"   
 
     def draft_section(self, section: SectionContextBase):  
-        sys_prompt = base_prompts.SYSTEM_PROMPT + "\n\n" + DOCUMENTATION_STYLES.section_style[section.section_id].system_prompt() 
-        dev_prompt = DOCUMENTATION_STYLES.section_style[section.section_id].developer_prompt() + base_prompts.DEVELOPER_PROMPT
-       
-        rich.print("System Prompt:")
-        rich.print(sys_prompt)
-        rich.print("Developer Prompt:")
-        rich.print(dev_prompt)
-        
+        sys_prompt = DRAFTER_SYSTEM_PROMPT + "\n\n" + DOCUMENTATION_STYLES.section_style[section.section_id].system_prompt() + DOCUMENTATION_STYLES.section_style[section.section_id].developer_prompt()
+            
         with self.client.responses.stream(            
             model=self.model,            
             temperature=self.temperature,
-            instructions=sys_prompt,
             max_output_tokens=self.max_tokens,
-            input=[                
-                self._msg("developer", dev_prompt),
+            instructions=sys_prompt,
+            input=[          
+                self._msg("developer", DRAFTER_DEVELOPER_PROMPT),
                 self._msg("user", section.model_dump_json())
             ]   
         ) as stream:

@@ -35,14 +35,15 @@ S101_PURPOSE = """
 
 S101_STYLE_GUIDE = """
 Use Markdown syntax for formatting.
-Avoid bullet points for this section
+Never use bullet points for Section S101.
 Section heading format: H2 `section_id` `section_name`
 """
 
 S101_OUTPUT = """
 Provide one or two short paragraphs summarising the Purchaser's objectives.
+Do not use bullet points
 """
-
+    
 S101_EXAMPLE = """
 H2 S101 Purchaser's Objectives
 The objective of the Client is to establish a state-of-the-art Smelting Plant with the capacity to process 18,000 tons per annum of PGM feedstock, employing DC furnace technology. This new plant will replace Arc 4, which is scheduled for decommissioning.

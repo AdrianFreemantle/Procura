@@ -139,8 +139,8 @@ def create_interface() -> gr.Blocks:
             ctx = chat_manager.create_new_context()
             chat_manager.save_context(ctx)  # assign ID, remains 'empty' until first message
             labels, selected, new_map = _build_choices()
-            # Select the newly created (current) chat in the sidebar
-            return gr.update(choices=labels, value=selected), new_map, []
+            # Select the newly created (current) chat in the sidebar and show greeting
+            return gr.update(choices=labels, value=selected), new_map, ctx.conversation_history
 
         new_chat_btn.click(
             fn=on_new_chat,

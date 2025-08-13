@@ -1,42 +1,33 @@
 FACTS_CONTEXT_STRUCTURE = """
 CONTEXT_STRUCTURE
 ========================
-The `context` includes:
-- `message_to_user`: Your reply to the user is placed here.
-- `section_id`: The current section (e.g., "S101")
-- `section_status`: "pending", "in_progress", or "complete".
-- `facts`: A list of fact objects, each with: 
-  - `data`: 
-    - `name`: fact name
-    - `description`: fact description
-    - `question`: Suggested question
-    - `answers`: A string array of facts.
-    - `status`: "pending", "answered", "not_applicable", or "partial" if more info needed. 
+`context` contains:
+- `message_to_user`: your reply
+- `section_id`: current section (e.g., "S101")
+- `section_status`: "pending", "in_progress", or "complete"
+- `facts`: List of fact objects, each with:
+-- `data`: name, description, question, answers[], status ("pending"/"answered"/"not_applicable"/"partial")
 """ 
 
 SECTION_S101_DEFINITION = """
 SECTION 101 INTERVIEW GUIDANCE:
 ===========
-- FOCUS:
-  - High-level business drivers
-  - Operational pain points, strategic goals, constraints
-  - Benefits in terms of improved outcomes
-- AVOID:
-  - Quantitave values: Number of goods, rated capacity, dimensions, weight 
-  - Manufacturer, Model, implementation details, delivery methods/schedules, payment terms 
-  - Specific technical standards, compliance frameworks, detailed performance criteria
+- FOCUS: High-level business drivers, operational pain points, strategic goals, constraints, benefits in improved outcomes.
+- AVOID: Quantitative details, manufacturers, models, delivery/payment terms, or specific technical standards.
 """
 
 SECTION_S102_DEFINITION = """
 SECTION 102 INTERVIEW GUIDANCE: 
 ===========
-- Always ask the user if they have any more goods they want to describe before completing section
-- For each goods the Purchaser wants to describe, add a new item to `goods_descriptions`
-- AVOID :
+- Never assume what to put in the goods_descriptions based on S101
+- Only place goods in the goods_descriptions list if the user explicitly provides them
+- Always ask if there are multiple goods to describe
+- For each new good, add an item to `goods_descriptions`.
+- Avoid:
   - Vague terms (e.g., "adequate", "typical", "suitable for purpose")
   - Technical standards, detailed performance criteria, or acceptance limits
-  - Installation, delivery, handling, packaging, or training details 
-  - Quantities or delivery batches 
+  - Installation, delivery, handling, packaging, or training details
+  - Quantities or delivery batches
 """
 
 S102_CONTEXT_STRUCTURE = """
@@ -48,26 +39,13 @@ The `context` includes:
 - `message_to_user`: Your reply to the user is placed here.
 - `goods_descriptions`: A list of goods descriptions, each with the following fields:
   - `goods_common_name`: The name or designation the Purchaser uses for the goods, used consistently in the contract and related documents.
-  - `core_characteristics`: The factual attributes that identify the goods, including type, model, size or dimensions, capacity, and, where relevant, configuration or variant codes.
+  - `goods_description`: How the purchaser would describe the goods
   - `intended_use`: High-level operational purpose or function of the goods within the Purchaser's operation.
 """ 
 
 SECTION_S103_DEFINITION = """
-SECTION 103 RULES:
+SECTION 103 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S103
-
-SECTION TITLE: Drawings
-
-SECTION PURPOSE: 
- - List all drawings, diagrams, or schematics required to define or illustrate the goods
- - Ensure visual documents align with the written description and confirm design intent
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(a)
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Drawings showing the design, arrangement, or installation of the goods
   - Complete references for each drawing: number, title, and revision level
@@ -78,21 +56,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S104_DEFINITION = """
-SECTION 104 RULES:
+SECTION 104 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S104
-
-SECTION TITLE: Tests and Inspections
-
-SECTION PURPOSE: 
- - Specify the tests and inspections required to verify the goods meet required quality standards
- - Define who performs the tests, when and where they occur, and the acceptable results to reduce acceptance disputes
-
-NEC4 SSC CLAUSE REFERENCE: 40.1
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - The set of tests or inspections required before acceptance
   - Responsibility, location, and timing for each test or inspection
@@ -104,21 +69,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S105_DEFINITION = """
-SECTION 105 RULES:
+SECTION 105 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S105
-
-SECTION TITLE: Samples
-
-SECTION PURPOSE: 
- - Define whether physical samples must be provided before fabrication or delivery
- - Specify submission, review, and acceptance or rejection processes to confirm expectations early
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(a)
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Whether samples are required prior to manufacturing or delivery
   - The type of samples to be submitted and the acceptance procedure
@@ -131,21 +83,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S106_DEFINITION = """
-SECTION 106 RULES:
+SECTION 106 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S106
-
-SECTION TITLE: Management of Tests and Inspections
-
-SECTION PURPOSE: 
- - Describe how tests and inspections will be organised, coordinated, and recorded
- - Define attendance, access arrangements, required documentation, and result submission so activities run smoothly
-
-NEC4 SSC CLAUSE REFERENCE: 40.1
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Overall management and coordination plan for tests and inspections
   - Scheduling, notice periods, and sequencing to avoid delays
@@ -157,21 +96,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S107_DEFINITION = """
-SECTION 107 RULES:
+SECTION 107 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S107
-
-SECTION TITLE: Correcting Defects
-
-SECTION PURPOSE: 
- - Outline the process for correcting defects found during testing, inspection, or delivery
- - Define reporting, access arrangements for repairs, and retesting to enable timely, controlled resolution
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(2), 40.1
-
-MANDATORY: true
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Notification and reporting process when a defect is identified
   - Roles responsible for authorising repair or replacement
@@ -183,21 +109,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S108_DEFINITION = """
-SECTION 108 RULES:
+SECTION 108 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S108
-
-SECTION TITLE: Health and Safety Requirements
-
-SECTION PURPOSE: 
- - List Purchaser-specific health and safety requirements beyond legal compliance
- - Align Supplier activities with the Purchaser’s internal safety standards
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(b)
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Purchaser-specific health and safety procedures and site rules the Supplier must follow
   - Required training, inductions, permits, and safety documentation
@@ -213,19 +126,6 @@ INTERVIEW GUIDANCE:
 SECTION_S109_DEFINITION = """
 SECTION 109 RULES:
 ===========
-SECTION ID: S109
-
-SECTION TITLE: Method Statements
-
-SECTION PURPOSE: 
- - Specify which activities require Supplier method statements or risk assessments for Purchaser review
- - Ensure higher-risk activities are planned safely and reviewed before execution
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(b)
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Specific activities requiring method statements or risk assessments (e.g., lifting, transport, installation, working at height, confined space)
   - Submission timing for documents and required notice period
@@ -236,21 +136,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S110_DEFINITION = """
-SECTION 110 RULES:
+SECTION 110 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S110
-
-SECTION TITLE: Statutory Requirements
-
-SECTION PURPOSE: 
- - Identify legal and regulatory duties that apply to the goods and their supply
- - Ensure the Supplier is aware of approvals, permits, and documentation required beyond the contract
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(b)
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Applicable national, regional, or industry-specific laws and regulations
   - Required approvals, permits, and licenses before or during supply
@@ -262,21 +149,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S111_DEFINITION = """
-SECTION 111 RULES:
+SECTION 111 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S111
-
-SECTION TITLE: Inspections of Safety Procedures
-
-SECTION PURPOSE: 
- - State whether the Purchaser will inspect, review, or audit the Supplier’s safety procedures
- - Define expectations for transparency, documentation, and compliance during the contract
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(b)
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Whether the Purchaser will conduct inspections or audits of the Supplier’s safety systems and procedures
   - Safety documents to be submitted for review and how they are provided
@@ -289,21 +163,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S112_DEFINITION = """
-SECTION 112 RULES:
+SECTION 112 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S112
-
-SECTION TITLE: Training Requirements
-
-SECTION PURPOSE: 
- - Detail training or accreditation the Supplier must provide to the Purchaser’s staff
- - Specify when, where, and how training will be delivered for operation, maintenance, or safety
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(b)
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Whether the Supplier must provide training to the Purchaser’s team
   - Training topics to be covered (operation, safety, maintenance)
@@ -317,20 +178,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S201_DEFINITION = """
-SECTION 201 RULES:
+SECTION 201 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S201
-
-SECTION TITLE: Specifications
-
-SECTION PURPOSE: 
- - List the technical specifications the Supplier must comply with
- - Organise general, discipline-specific, component-level, or assembly-level criteria so each part of the goods is clearly defined
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(b)
-
-MANDATORY: true
-
 CONTEXT_STRUCTURE
 ========================
 you are given a `context` object in the developer prompt:
@@ -372,21 +221,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S202_DEFINITION = """
-SECTION 202 RULES:
+SECTION 202 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S202
-
-SECTION TITLE: Deleterious and Hazardous Materials
-
-SECTION PURPOSE: 
- - List materials the Supplier is not allowed to use
- - Support safety, environmental compliance, and alignment with Purchaser policies
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(b)
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Banned or restricted materials, hazardous substances, chemicals, insulation types, and coatings
   - Legal or environmental regulations that limit material choices
@@ -398,21 +234,8 @@ INTERVIEW GUIDANCE:
 """
 
 SECTION_S301_DEFINITION = """
-SECTION 301 RULES:
+SECTION 301 INTERVIEW GUIDANCE:
 ===========
-SECTION ID: S301
-
-SECTION TITLE: General Constraints
-
-SECTION PURPOSE: 
- - State general restrictions on how the Supplier performs their work
- - Make the Supplier aware of non-negotiable boundaries arising from legal, environmental, community, or Purchaser policies
-
-NEC4 SSC CLAUSE REFERENCE: 11.2(11)(b)
-
-MANDATORY: false
-
-INTERVIEW GUIDANCE:
 - FOCUS:
   - Purchaser-specific rules or site conditions the Supplier must follow
   - Constraints arising from environmental permits or ecological sensitivity
