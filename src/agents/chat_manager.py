@@ -1,8 +1,11 @@
 import logging
 from agents.interview_agent import InterviewerAgent
+from agents.document_drafting.drafter_agent import DrafterAgent
+
 from agents.context_management.interview_context import InterviewContext
-from agents.context_management.session_contexts.contexts import CONTEXTS
+from agents.context_management.session_contexts.contexts import *
 from agents.context_management.persistence.sqlite_store import SqlLiteContextStore
+
 import time
 import rich
 from datetime import datetime
@@ -12,9 +15,9 @@ logger = logging.getLogger(__name__)
 class ChatManager:
     def __init__(self):    
         self.interviewer_agent = InterviewerAgent()
+        self.drafter_agent = DrafterAgent()
         # Initialize an in-memory working context; persisted on first save
-        self.persisted_context = InterviewContext()
-        self.persisted_context.sections = CONTEXTS
+        self.persisted_context = InterviewContext(main_contexts=MAIN_CONTEXTS)
         self.context_store = SqlLiteContextStore()
         self.current_context_id: int | None = None
         logger.info("ChatManager initialized")
@@ -27,10 +30,10 @@ class ChatManager:
             context_id=None,
             context_name=name if name else datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             context_status="empty",
-            sections=CONTEXTS
+            main_contexts=MAIN_CONTEXTS
         )
         self.persisted_context = context
-        logger.info("Created new context with name '%s'", context.context_name)
+        logger.debug("Created new context with name '%s'", context.context_name)
         return context
     
     def load_context(self, context_id: int) -> InterviewContext | None:
@@ -39,7 +42,7 @@ class ChatManager:
         if context is not None:
             self.persisted_context = context
             self.current_context_id = context.context_id
-            logger.info("Loaded context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)
+            logger.debug("Loaded context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)
         else:
             logger.warning("Context id=%s not found when attempting to load", context_id)
         return context
@@ -51,7 +54,7 @@ class ChatManager:
         context_id = self.context_store.store_context(context)
         self.persisted_context = context
         self.current_context_id = context_id
-        logger.info("Saved context id=%s name='%s' status=%s", context_id, context.context_name, context.context_status)
+        logger.debug("Saved context id=%s name='%s' status=%s", context_id, context.context_name, context.context_status)
         return context_id
         
     def _msg(self,role: str, content: str) -> dict:
@@ -66,23 +69,26 @@ class ChatManager:
         # First user interaction activates the context
         if context.context_status == "empty":
             context.context_status = "active"
-            logger.info("Context id=%s promoted to 'active'", context.context_id)
+            logger.debug("Context id=%s promoted to 'active'", context.context_id)
 
+        logger.info("User input: %s", user_input)
         context.conversation_append("user", user_input)
 
         start_time = time.perf_counter()
-        new_context = self.interviewer_agent.evaluate(context)            
+        new_context = self.interviewer_agent.evaluate(context)    
+        logger.info("New context: %s", new_context.model_dump_json())        
         end_time = time.perf_counter()   
-        logger.info("Facts evaluation took %.2f seconds", (end_time - start_time))
-        
+        logger.debug("Facts evaluation took %.2f seconds", (end_time - start_time))        
+
         context.update_section(new_context)        
-        if new_context.section_status == "complete":
-            context.advance_to_next_section()                          
 
         rich.print(new_context)
         context.conversation_append("assistant", new_context.message_to_user)
-        yield context.get_conversation()    
+        yield context.get_conversation()            
 
+        if new_context.section_status == "complete":            
+            context.advance_to_next_section()                          
+        
         # Persist updates and ensure an integer ID is assigned
         self.save_context(context)
 
@@ -93,8 +99,11 @@ class ChatManager:
             logger.info("Switched to context id=%s", context_id)
         return ctx
 
+    def draft(self):
+        yield from self.drafter_agent.draft(self.persisted_context)
+
     def list_contexts(self):
         """List contexts for UI selection, filtering out 'empty' except the current context."""
         current_id = self.current_context_id if self.current_context_id is not None else None
-        logger.info("Listing contexts (current_context_id=%s)", current_id)
+        logger.debug("Listing contexts (current_context_id=%s)", current_id)
         return self.context_store.list_contexts(current_id)

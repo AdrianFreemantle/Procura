@@ -193,9 +193,11 @@ def create_interface() -> gr.Blocks:
 
         def handle_markdown_generation():
             """Wrapper to convert agent output to gr.update format for proper markdown rendering"""
-            for content in markdown_agent.generate():
-                yield gr.update(value=content)
+            buffer = ""
+            for content in chat_manager.draft():
+                buffer += content
+                yield gr.update(value=buffer)
 
-        # draft_btn.click(handle_markdown_generation, inputs=[], outputs=markdown_output)
+        draft_btn.click(handle_markdown_generation, inputs=[], outputs=markdown_output)
 
     return demo

@@ -14,7 +14,7 @@ import ui
 def main() -> None:
     """Launch the Gradio app."""
     demo = ui.create_interface()
-    demo.launch(server_name="0.0.0.0", show_api=False, pwa=True)
+    demo.launch(server_name="0.0.0.0", show_api=False, pwa=True, share=True)
 
 if __name__ == "__main__":
     main()
