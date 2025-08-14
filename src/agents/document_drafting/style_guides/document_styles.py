@@ -40,7 +40,7 @@ Section heading format: H2 `section_id` `section_name`
 """
 
 S101_OUTPUT = """
-Provide one or two short paragraphs summarising the Purchaser's objectives.
+Provide one to three paragraphs stating the Purchaser's objectives.
 Do not use bullet points
 """
     

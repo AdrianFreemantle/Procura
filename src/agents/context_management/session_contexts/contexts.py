@@ -3,6 +3,7 @@ from .section_context import *
 
 S101_CONTEXT: SectionContextBase = FactsSectionContext(
     section_id=SectionID.S101,
+    section_name="Purchaser's Objectives",
     facts=[
         Fact(
             name="business_need_or_driver",

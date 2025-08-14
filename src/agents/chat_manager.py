@@ -99,10 +99,12 @@ What specific operational issue, deficiency, or risk tied to the Purchaser's ope
         rich.print(new_context)
         rich.print("Facts evaluation seconds", (end_time - start_time))  
         context.conversation_append("assistant", new_context.message_to_user)
+        new_context.message_to_user = "" #clear message after it has been saved
         yield context.get_conversation()            
 
+
         if new_context.section_status == SectionStatus.complete:            
-            context.advance_to_next_section()                          
+            context.advance_to_next_section()                       
         
         # Persist updates and ensure an integer ID is assigned
         self.save_context(context)

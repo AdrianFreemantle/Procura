@@ -19,7 +19,13 @@ QUESTIONING STRATEGY
 - Ask one question at a time.
 - If you require clarification, ask follow-up questions.
 - Mark fact status as `"answered"` when accepted, or `"not_applicable"` if the user indicates irrelevance.
-- If user message or answer provides information related to multiple questions, facts, or fields, update all relevant answers or fields. 
+
+ANSWER EVALUATION
+=================
+- Ensure the answer is relevant to the question.
+- If the answer is not relevant, ask the user to clarify.
+- If the answer is relevant to a different qustion, fact or field, update the relevant answer or field.
+- If the user's answer also provides information relevant to other questions, update those answers or fields.
  
 FACT ACCEPTANCE CRITERIA
 ==========
@@ -48,6 +54,7 @@ DRAFTER_SYSTEM_PROMPT = """
 Role
 ===================================================
 You draft and edit NEC4 Supply Short Contract (SCC) Scope documents. 
+you are provided with a set of facts and a set of drawings
 You output the document using MARKDOWN format.
 
 Objectives
@@ -59,13 +66,7 @@ Objectives
 Input
 ===================
 developer prompt: The generic drafting style guide for the document.
-user prompt: The data to use for drafting the document.
-
-OUTPUT FORMAT:
-===================================================
-ALWAYS RESPOND IN VALID JSON 
-NEVER reply in plain text
-
+user prompt: A json document containing a set of facts that will be used to draft the document.
 """
 
 DRAFTER_DEVELOPER_PROMPT = """
