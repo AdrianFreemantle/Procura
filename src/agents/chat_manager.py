@@ -14,15 +14,12 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 class ChatManager:
-    def __init__(self):    
+    def __init__(self):
         self.interviewer_agent = InterviewerAgent()
         self.drafter_agent = DrafterAgent()
-        # Initialize an in-memory working context; persisted on first save
-        self.persisted_context = InterviewContext(main_contexts=MAIN_CONTEXTS)
         self.context_store = SqlLiteContextStore()
-        self.current_context_id: int | None = None
         logger.info("ChatManager initialized")
-        
+
     def create_new_context(self, name: str | None = None) -> InterviewContext:
         """Create a new InterviewContext with status 'empty'.
         The context will be assigned an integer ID when first saved.
@@ -33,46 +30,43 @@ class ChatManager:
             context_status="empty",
             main_contexts=MAIN_CONTEXTS
         )
-        self.persisted_context = context
         logger.debug("Created new context with name '%s'", context.context_name)
         return context
-    
+
     def load_context(self, context_id: int) -> InterviewContext | None:
         """Load an InterviewContext by integer ID from the store."""
         context = self.context_store.get_context(context_id)
         if context is not None:
-            self.persisted_context = context
-            self.current_context_id = context.context_id
             logger.debug("Loaded context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)
         else:
             logger.warning("Context id=%s not found when attempting to load", context_id)
         return context
 
     def save_context(self, context: InterviewContext) -> int:
-        """Persist the context to the store and update current_context_id.
+        """Persist the context to the store.
         Returns the assigned integer context_id.
         """
         context_id = self.context_store.store_context(context)
-        self.persisted_context = context
-        self.current_context_id = context_id
         logger.debug("Saved context id=%s name='%s' status=%s", context_id, context.context_name, context.context_status)
         return context_id
-        
+
     def _msg(self,role: str, content: str) -> dict:
-        return {"role": role, "content": content}    
+        return {"role": role, "content": content}
 
     def get_greeting_message(self) -> str:
         """Generate a greeting message for new chats."""
         return """👋 Welcome to Procura - Your NEC4 SSC Scope Document Assistant!
 
-What specific operational issue, deficiency, or risk tied to the Purchaser's operations is prompting this procurement?        
+What specific operational issue, deficiency, or risk tied to the Purchaser's operations is prompting this procurement?
         """
 
-    def chat(self, user_input: str): 
+    def chat(self, context_id: int, user_input: str):
         # Ensure there is a working context
-        context = self.persisted_context
+        context = self.load_context(context_id)
         if context is None:
-            context = self.create_new_context()
+            logger.error("Chat called with invalid context_id: %s", context_id)
+            # Or raise an exception
+            return
 
         if(user_input.startswith("/")):
             if(user_input.strip() == "/context"):
@@ -89,38 +83,34 @@ What specific operational issue, deficiency, or risk tied to the Purchaser's ope
         context.conversation_append("user", user_input)
 
         start_time = time.perf_counter()
-        new_context = self.interviewer_agent.evaluate(context)    
-        logger.info("New context: %s", new_context.model_dump_json())        
-        end_time = time.perf_counter()   
-        logger.debug("Facts evaluation took %.2f seconds", (end_time - start_time))          
+        new_context = self.interviewer_agent.evaluate(context)
+        logger.info("New context: %s", new_context.model_dump_json())
+        end_time = time.perf_counter()
+        logger.debug("Facts evaluation took %.2f seconds", (end_time - start_time))
 
-        context.update_section(new_context)        
+        context.update_section(new_context)
 
         rich.print(new_context)
-        rich.print("Facts evaluation seconds", (end_time - start_time))  
+        rich.print("Facts evaluation seconds", (end_time - start_time))
         context.conversation_append("assistant", new_context.message_to_user)
         new_context.message_to_user = "" #clear message after it has been saved
-        yield context.get_conversation()            
+        yield context.get_conversation()
 
 
-        if new_context.section_status == SectionStatus.complete:            
-            context.advance_to_next_section()                       
-        
+        if new_context.section_status == SectionStatus.complete:
+            context.advance_to_next_section()
+
         # Persist updates and ensure an integer ID is assigned
         self.save_context(context)
 
-    def switch_context(self, context_id: int) -> InterviewContext | None:
-        """Switch the active conversation to the specified context ID."""
-        ctx = self.load_context(context_id)
-        if ctx is not None:
-            logger.info("Switched to context id=%s", context_id)
-        return ctx
+    def draft(self, context_id: int):
+        context = self.load_context(context_id)
+        if context is None:
+            logger.error("Draft called with invalid context_id: %s", context_id)
+            return
+        yield from self.drafter_agent.draft(context)
 
-    def draft(self):
-        yield from self.drafter_agent.draft(self.persisted_context)
-
-    def list_contexts(self):
+    def list_contexts(self, current_context_id: int | None = None):
         """List contexts for UI selection, filtering out 'empty' except the current context."""
-        current_id = self.current_context_id if self.current_context_id is not None else None
-        logger.debug("Listing contexts (current_context_id=%s)", current_id)
-        return self.context_store.list_contexts(current_id)
+        logger.debug("Listing contexts (current_context_id=%s)", current_context_id)
+        return self.context_store.list_contexts(current_context_id)

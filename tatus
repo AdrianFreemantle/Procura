@@ -1,0 +1,383 @@
+[1mdiff --git a/requirements.txt b/requirements.txt[m
+[1mindex 98357ab..fa19436 100644[m
+[1m--- a/requirements.txt[m
+[1m+++ b/requirements.txt[m
+[36m@@ -1,6 +1,9 @@[m
+ gradio>=4.0[m
+ python-dotenv>=1.0[m
+ openai~=1.98.0[m
+[32m+[m[32mfastapi>=0.116.1[m
+[32m+[m[32muvicorn>=0.35.0[m
+[32m+[m[32mrequests>=2.32.4[m
+ [m
+ pytest>=8.0[m
+ [m
+[1mdiff --git a/src/agents/chat_manager.py b/src/agents/chat_manager.py[m
+[1mindex 842912c..dc014d8 100644[m
+[1m--- a/src/agents/chat_manager.py[m
+[1m+++ b/src/agents/chat_manager.py[m
+[36m@@ -14,15 +14,12 @@[m [mfrom datetime import datetime[m
+ logger = logging.getLogger(__name__)[m
+ [m
+ class ChatManager:[m
+[31m-    def __init__(self):    [m
+[32m+[m[32m    def __init__(self):[m
+         self.interviewer_agent = InterviewerAgent()[m
+         self.drafter_agent = DrafterAgent()[m
+[31m-        # Initialize an in-memory working context; persisted on first save[m
+[31m-        self.persisted_context = InterviewContext(main_contexts=MAIN_CONTEXTS)[m
+         self.context_store = SqlLiteContextStore()[m
+[31m-        self.current_context_id: int | None = None[m
+         logger.info("ChatManager initialized")[m
+[31m-        [m
+[32m+[m
+     def create_new_context(self, name: str | None = None) -> InterviewContext:[m
+         """Create a new InterviewContext with status 'empty'.[m
+         The context will be assigned an integer ID when first saved.[m
+[36m@@ -33,46 +30,43 @@[m [mclass ChatManager:[m
+             context_status="empty",[m
+             main_contexts=MAIN_CONTEXTS[m
+         )[m
+[31m-        self.persisted_context = context[m
+         logger.debug("Created new context with name '%s'", context.context_name)[m
+         return context[m
+[31m-    [m
+[32m+[m
+     def load_context(self, context_id: int) -> InterviewContext | None:[m
+         """Load an InterviewContext by integer ID from the store."""[m
+         context = self.context_store.get_context(context_id)[m
+         if context is not None:[m
+[31m-            self.persisted_context = context[m
+[31m-            self.current_context_id = context.context_id[m
+             logger.debug("Loaded context id=%s name='%s' status=%s", context.context_id, context.context_name, context.context_status)[m
+         else:[m
+             logger.warning("Context id=%s not found when attempting to load", context_id)[m
+         return context[m
+ [m
+     def save_context(self, context: InterviewContext) -> int:[m
+[31m-        """Persist the context to the store and update current_context_id.[m
+[32m+[m[32m        """Persist the context to the store.[m
+         Returns the assigned integer context_id.[m
+         """[m
+         context_id = self.context_store.store_context(context)[m
+[31m-        self.persisted_context = context[m
+[31m-        self.current_context_id = context_id[m
+         logger.debug("Saved context id=%s name='%s' status=%s", context_id, context.context_name, context.context_status)[m
+         return context_id[m
+[31m-        [m
+[32m+[m
+     def _msg(self,role: str, content: str) -> dict:[m
+[31m-        return {"role": role, "content": content}    [m
+[32m+[m[32m        return {"role": role, "content": content}[m
+ [m
+     def get_greeting_message(self) -> str:[m
+         """Generate a greeting message for new chats."""[m
+         return """👋 Welcome to Procura - Your NEC4 SSC Scope Document Assistant![m
+ [m
+[31m-What specific operational issue, deficiency, or risk tied to the Purchaser's operations is prompting this procurement?        [m
+[32m+[m[32mWhat specific operational issue, deficiency, or risk tied to the Purchaser's operations is prompting this procurement?[m
+         """[m
+ [m
+[31m-    def chat(self, user_input: str): [m
+[32m+[m[32m    def chat(self, context_id: int, user_input: str):[m
+         # Ensure there is a working context[m
+[31m-        context = self.persisted_context[m
+[32m+[m[32m        context = self.load_context(context_id)[m
+         if context is None:[m
+[31m-            context = self.create_new_context()[m
+[32m+[m[32m            logger.error("Chat called with invalid context_id: %s", context_id)[m
+[32m+[m[32m            # Or raise an exception[m
+[32m+[m[32m            return[m
+ [m
+         if(user_input.startswith("/")):[m
+             if(user_input.strip() == "/context"):[m
+[36m@@ -89,38 +83,34 @@[m [mWhat specific operational issue, deficiency, or risk tied to the Purchaser's ope[m
+         context.conversation_append("user", user_input)[m
+ [m
+         start_time = time.perf_counter()[m
+[31m-        new_context = self.interviewer_agent.evaluate(context)    [m
+[31m-        logger.info("New context: %s", new_context.model_dump_json())        [m
+[31m-        end_time = time.perf_counter()   [m
+[31m-        logger.debug("Facts evaluation took %.2f seconds", (end_time - start_time))          [m
+[32m+[m[32m        new_context = self.interviewer_agent.evaluate(context)[m
+[32m+[m[32m        logger.info("New context: %s", new_context.model_dump_json())[m
+[32m+[m[32m        end_time = time.perf_counter()[m
+[32m+[m[32m        logger.debug("Facts evaluation took %.2f seconds", (end_time - start_time))[m
+ [m
+[31m-        context.update_section(new_context)        [m
+[32m+[m[32m        context.update_section(new_context)[m
+ [m
+         rich.print(new_context)[m
+[31m-        rich.print("Facts evaluation seconds", (end_time - start_time))  [m
+[32m+[m[32m        rich.print("Facts evaluation seconds", (end_time - start_time))[m
+         context.conversation_append("assistant", new_context.message_to_user)[m
+         new_context.message_to_user = "" #clear message after it has been saved[m
+[31m-        yield context.get_conversation()            [m
+[32m+[m[32m        yield context.get_conversation()[m
+ [m
+ [m
+[31m-        if new_context.section_status == SectionStatus.complete:            [m
+[31m-            context.advance_to_next_section()                       [m
+[31m-        [m
+[32m+[m[32m        if new_context.section_status == SectionStatus.complete:[m
+[32m+[m[32m            context.advance_to_next_section()[m
+[32m+[m
+         # Persist updates and ensure an integer ID is assigned[m
+         self.save_context(context)[m
+ [m
+[31m-    def switch_context(self, context_id: int) -> InterviewContext | None:[m
+[31m-        """Switch the active conversation to the specified context ID."""[m
+[31m-        ctx = self.load_context(context_id)[m
+[31m-        if ctx is not None:[m
+[31m-            logger.info("Switched to context id=%s", context_id)[m
+[31m-        return ctx[m
+[31m-[m
+[31m-    def draft(self):[m
+[31m-        yield from self.drafter_agent.draft(self.persisted_context)[m
+[32m+[m[32m    def draft(self, context_id: int):[m
+[32m+[m[32m        context = self.load_context(context_id)[m
+[32m+[m[32m        if context is None:[m
+[32m+[m[32m            logger.error("Draft called with invalid context_id: %s", context_id)[m
+[32m+[m[32m            return[m
+[32m+[m[32m        yield from self.drafter_agent.draft(context)[m
+ [m
+[31m-    def list_contexts(self):[m
+[32m+[m[32m    def list_contexts(self, current_context_id: int | None = None):[m
+         """List contexts for UI selection, filtering out 'empty' except the current context."""[m
+[31m-        current_id = self.current_context_id if self.current_context_id is not None else None[m
+[31m-        logger.debug("Listing contexts (current_context_id=%s)", current_id)[m
+[31m-        return self.context_store.list_contexts(current_id)[m
+\ No newline at end of file[m
+[32m+[m[32m        logger.debug("Listing contexts (current_context_id=%s)", current_context_id)[m
+[32m+[m[32m        return self.context_store.list_contexts(current_context_id)[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main.py b/src/main.py[m
+[1mindex 8e19890..0022738 100644[m
+[1m--- a/src/main.py[m
+[1m+++ b/src/main.py[m
+[36m@@ -18,3 +18,4 @@[m [mdef main() -> None:[m
+ [m
+ if __name__ == "__main__":[m
+     main()[m
+[41m+    [m
+\ No newline at end of file[m
+[1mdiff --git a/src/ui.py b/src/ui.py[m
+[1mindex b54b2cf..d25bc63 100644[m
+[1m--- a/src/ui.py[m
+[1m+++ b/src/ui.py[m
+[36m@@ -1,14 +1,12 @@[m
+ import gradio as gr[m
+[31m-[m
+[31m-from agents.chat_manager import ChatManager[m
+[31m-#from agents.markdown_agent import MarkdownAgent[m
+[32m+[m[32mimport requests[m[41m[m
+[32m+[m[32mimport json[m[41m[m
+ from utils.logging_config import init_logging[m
+ [m
+ # Initialize logging as early as possible[m
+ init_logging()[m
+ [m
+[31m-chat_manager = ChatManager()[m
+[31m-#markdown_agent = MarkdownAgent()[m
+[32m+[m[32mAPI_URL = "http://127.0.0.1:8000"[m[41m[m
+ [m
+ # -----------------------------------------------------------------------------[m
+ # Gradio UI --------------------------------------------------------------------[m
+[36m@@ -65,7 +63,7 @@[m [mdef create_interface() -> gr.Blocks:[m
+             with gr.Column(scale=2):[m
+                 markdown_output = gr.Markdown([m
+                     value="*No document drafted yet.*",[m
+[31m-                    elem_id="doc_output",                    [m
+[32m+[m[32m                    elem_id="doc_output",[m[41m[m
+                     container=True,[m
+                     show_copy_button=True[m
+                 )[m
+[36m@@ -84,14 +82,28 @@[m [mdef create_interface() -> gr.Blocks:[m
+                 send_btn = gr.Button("💬 Send Message")[m
+                 draft_btn = gr.Button("📄 Draft Document", variant="secondary")[m
+ [m
+[31m-        # --- Helpers & State ---[m
+[32m+[m[32m        # --- State Management ---[m[41m[m
+[32m+[m[32m        mapping_state = gr.State({})  # Maps UI labels to context IDs[m[41m[m
+[32m+[m[32m        context_id_state = gr.State(None)  # Stores the currently active context ID[m[41m[m
+[32m+[m[32m        message_state = gr.State()  # Stores the user message before sending to API[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m        # --- Helpers ---[m[41m[m
+         def _context_label(ctx: dict) -> str:[m
+[31m-            # Example: "3 • 2025-08-08 16:10:12 (active)"[m
+             return f"{ctx['context_id']} • {ctx['context_name']} ({ctx['context_status']})"[m
+ [m
+[31m-        def _build_choices():[m
+[31m-            ctxs = chat_manager.list_contexts()[m
+[31m-            current_id = chat_manager.current_context_id[m
+[32m+[m[32m        def _build_choices(current_context_id=None):[m[41m[m
+[32m+[m[32m            params = {}[m[41m[m
+[32m+[m[32m            if current_context_id:[m[41m[m
+[32m+[m[32m                params['current_context_id'] = current_context_id[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            try:[m[41m[m
+[32m+[m[32m                response = requests.get(f"{API_URL}/contexts", params=params)[m[41m[m
+[32m+[m[32m                response.raise_for_status()[m[41m[m
+[32m+[m[32m                ctxs = response.json()[m[41m[m
+[32m+[m[32m            except (requests.RequestException, json.JSONDecodeError) as e:[m[41m[m
+[32m+[m[32m                gr.Warning(f"Error fetching contexts: {e}")[m[41m[m
+[32m+[m[32m                return [], None, {}[m[41m[m
+[32m+[m[41m[m
+             labels = [][m
+             mapping = {}[m
+             selected = None[m
+[36m@@ -99,85 +111,108 @@[m [mdef create_interface() -> gr.Blocks:[m
+                 label = _context_label(c)[m
+                 labels.append(label)[m
+                 mapping[label] = c["context_id"][m
+[31m-                if current_id is not None and c["context_id"] == current_id:[m
+[32m+[m[32m                if current_context_id is not None and c["context_id"] == current_context_id:[m[41m[m
+                     selected = label[m
+             return labels, selected, mapping[m
+ [m
+[31m-        mapping_state = gr.State({})[m
+[31m-[m
+[31m-        # --- Events ---    [m
+[31m-[m
+[31m-        def send_message(message, chat_history):[m
+[31m-            # Process the message and return updated chat[m
+[31m-            for updated_chat in chat_manager.chat(message):[m
+[31m-                chat_history = updated_chat[m
+[31m-            return chat_history[m
+[32m+[m[32m        # --- Event Handlers ---[m[41m[m
+ [m
+[31m-        # Step 1: Clear input, store message in state[m
+[31m-        def prep_message(user_input, chat_history):[m
+[31m-            new_message = {"role": "user", "content": user_input}[m
+[31m-            chat_history.append(new_message)[m
+[31m-            return "", user_input, chat_history[m
+[31m-[m
+[31m-        message_state = gr.State()[m
+[31m-[m
+[31m-        # Initialize sidebar with context list on app load[m
+         def init_sidebar():[m
+[31m-            labels, selected, mapping = _build_choices()[m
+[31m-            # Do not auto-select or load any previous chat on load.[m
+[31m-            # Show a blank new chat until the user selects or creates one.[m
+[31m-            return gr.update(choices=labels, value=None), mapping, [][m
+[32m+[m[32m            labels, _, mapping = _build_choices()[m[41m[m
+[32m+[m[32m            return gr.update(choices=labels, value=None), mapping, [], None[m[41m[m
+ [m
+         demo.load([m
+             fn=init_sidebar,[m
+             inputs=[],[m
+[31m-            outputs=[chat_selector, mapping_state, chatbot][m
+[32m+[m[32m            outputs=[chat_selector, mapping_state, chatbot, context_id_state][m[41m[m
+         )[m
+ [m
+[31m-        # New Chat: create and persist, then refresh list and clear chat UI[m
+[31m-        def on_new_chat(mapping):[m
+[31m-            ctx = chat_manager.create_new_context()[m
+[31m-            chat_manager.save_context(ctx)  # assign ID, remains 'empty' until first message[m
+[31m-            labels, selected, new_map = _build_choices()[m
+[31m-            # Select the newly created (current) chat in the sidebar and show greeting[m
+[31m-            return gr.update(choices=labels, value=selected), new_map, ctx.conversation_history[m
+[32m+[m[32m        def on_new_chat():[m[41m[m
+[32m+[m[32m            try:[m[41m[m
+[32m+[m[32m                response = requests.post(f"{API_URL}/contexts", json={"name": None})[m[41m[m
+[32m+[m[32m                response.raise_for_status()[m[41m[m
+[32m+[m[32m                new_ctx = response.json()[m[41m[m
+[32m+[m[32m                new_ctx_id = new_ctx['context_id'][m[41m[m
+[32m+[m[32m            except requests.RequestException as e:[m[41m[m
+[32m+[m[32m                gr.Warning(f"Error creating new chat: {e}")[m[41m[m
+[32m+[m[32m                return gr.update(), gr.update(), gr.update(), gr.update()[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            labels, selected, new_map = _build_choices(current_context_id=new_ctx_id)[m[41m[m
+[32m+[m[32m            history = new_ctx.get('conversation_history', [])[m[41m[m
+[32m+[m[32m            return gr.update(choices=labels, value=selected), new_map, history, new_ctx_id[m[41m[m
+ [m
+         new_chat_btn.click([m
+             fn=on_new_chat,[m
+[31m-            inputs=[mapping_state],[m
+[31m-            outputs=[chat_selector, mapping_state, chatbot][m
+[32m+[m[32m            inputs=[],[m[41m[m
+[32m+[m[32m            outputs=[chat_selector, mapping_state, chatbot, context_id_state][m[41m[m
+         )[m
+ [m
+[31m-        # Selecting a chat: switch and load its conversation history[m
+         def on_select_chat(selected_label, mapping):[m
+             if not selected_label:[m
+[31m-                return [][m
+[32m+[m[32m                return [], None[m[41m[m
+[32m+[m[41m[m
+             ctx_id = mapping.get(selected_label)[m
+             if ctx_id is None:[m
+[31m-                # Mapping might be stale; rebuild once[m
+[31m-                labels, selected, new_map = _build_choices()[m
+[31m-                if selected_label in new_map:[m
+[31m-                    ctx_id = new_map[selected_label][m
+[31m-                else:[m
+[31m-                    return [][m
+[31m-            ctx = chat_manager.switch_context(ctx_id)[m
+[31m-            if ctx is None:[m
+[31m-                return [][m
+[31m-            return ctx.conversation_history[m
+[32m+[m[32m                gr.Warning(f"Could not find chat ID for '{selected_label}'.")[m[41m[m
+[32m+[m[32m                return gr.update(), gr.update()[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            try:[m[41m[m
+[32m+[m[32m                response = requests.get(f"{API_URL}/contexts/{ctx_id}")[m[41m[m
+[32m+[m[32m                response.raise_for_status()[m[41m[m
+[32m+[m[32m                ctx = response.json()[m[41m[m
+[32m+[m[32m            except requests.RequestException as e:[m[41m[m
+[32m+[m[32m                gr.Warning(f"Error loading chat: {e}")[m[41m[m
+[32m+[m[32m                return gr.update(), gr.update()[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            return ctx.get('conversation_history', []), ctx_id[m[41m[m
+ [m
+         chat_selector.change([m
+             fn=on_select_chat,[m
+             inputs=[chat_selector, mapping_state],[m
+[31m-            outputs=[chatbot][m
+[32m+[m[32m            outputs=[chatbot, context_id_state][m[41m[m
+         )[m
+ [m
+[32m+[m[32m        def prep_message(user_input_text, chat_history):[m[41m[m
+[32m+[m[32m            if not user_input_text.strip():[m[41m[m
+[32m+[m[32m                return "", None, chat_history[m[41m[m
+[32m+[m[32m            new_message = {"role": "user", "content": user_input_text}[m[41m[m
+[32m+[m[32m            chat_history.append(new_message)[m[41m[m
+[32m+[m[32m            return "", user_input_text, chat_history[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m        def send_message(message, context_id, chat_history):[m[41m[m
+[32m+[m[32m            if context_id is None:[m[41m[m
+[32m+[m[32m                chat_history.append({"role": "assistant", "content": "Please create or select a chat first."})[m[41m[m
+[32m+[m[32m                yield chat_history[m[41m[m
+[32m+[m[32m                return[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            try:[m[41m[m
+[32m+[m[32m                response = requests.post([m[41m[m
+[32m+[m[32m                    f"{API_URL}/contexts/{context_id}/chat",[m[41m[m
+[32m+[m[32m                    json={"message": message},[m[41m[m
+[32m+[m[32m                    stream=True,[m[41m[m
+[32m+[m[32m                    timeout=120[m[41m[m
+[32m+[m[32m                )[m[41m[m
+[32m+[m[32m                response.raise_for_status()[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m                for line in response.iter_lines():[m[41m[m
+[32m+[m[32m                    if line.startswith(b'data:'):[m[41m[m
+[32m+[m[32m                        data_str = line.decode('utf-8')[5:].strip()[m[41m[m
+[32m+[m[32m                        if data_str:[m[41m[m
+[32m+[m[32m                            updated_chat = json.loads(data_str)[m[41m[m
+[32m+[m[32m                            yield updated_chat[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            except requests.RequestException as e:[m[41m[m
+[32m+[m[32m                error_message = {"role": "assistant", "content": f"Error: Could not connect to the assistant. {e}"}[m[41m[m
+[32m+[m[32m                chat_history.append(error_message)[m[41m[m
+[32m+[m[32m                yield chat_history[m[41m[m
+[32m+[m[41m[m
+         send_btn.click([m
+             fn=prep_message,[m
+             inputs=[user_input, chatbot],[m
+             outputs=[user_input, message_state, chatbot],[m
+         ).then([m
+             fn=send_message,[m
+[31m-            inputs=[message_state, chatbot],[m
+[32m+[m[32m            inputs=[message_state, context_id_state, chatbot],[m[41m[m
+             outputs=[chatbot],[m
+         )

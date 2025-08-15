@@ -1,4 +1,4 @@
-from openai import OpenAI
+from agents.llm_client import get_openai_client
 from agents.context_management import *
 from agents.agent_prompts import *
 from agents.agent_prompts.base_prompts import *
@@ -10,7 +10,7 @@ import rich
 
 class DrafterAgent:
     def __init__(self):
-        self.client = OpenAI()
+        self.client = get_openai_client()
         self.model = os.getenv("INTERVIEW_MODEL", "gpt-4.1-mini")
         self.temperature =  0.0
         self.max_tokens = 50000
